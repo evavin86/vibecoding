@@ -1,0 +1,2955 @@
+import { useState, useEffect, useCallback } from 'react';
+
+// ==================== COURSE DATA ====================
+interface Lesson {
+  id: string;
+  title: string;
+  content: string;
+  code?: string;
+  exercise?: {
+    question: string;
+    options: string[];
+    correct: number;
+    explanation: string;
+  };
+}
+
+interface Module {
+  id: string;
+  title: string;
+  icon: string;
+  description: string;
+  lessons: Lesson[];
+}
+
+const courseData: Module[] = [
+  {
+    id: 'intro',
+    title: 'Введение в Python',
+    icon: '🐍',
+    description: 'Знакомство с языком программирования Python',
+    lessons: [
+      {
+        id: 'intro-1',
+        title: 'Что такое Python?',
+        content: `Python — это высокоуровневый язык программирования общего назначения, созданный Гвидо ван Россумом в 1991 году.
+
+**Почему Python популярен:**
+- Простой и читаемый синтаксис
+- Огромная стандартная библиотека
+- Активное сообщество разработчиков
+- Применяется в веб-разработке, науке о данных, машинном обучении, автоматизации
+
+**Где используется Python:**
+- 🌐 Веб-разработка (Django, Flask)
+- 📊 Анализ данных (Pandas, NumPy)
+- 🤖 Машинное обучение (TensorFlow, PyTorch)
+- 🔧 Автоматизация скриптов
+- 🎮 Разработка игр (Pygame)
+- 🌍 Веб-скрапинг (BeautifulSoup, Scrapy)`,
+        code: `# Ваша первая программа на Python!
+print("Привет, мир!")
+print("Добро пожаловать в курс Python!")
+
+# Python известен своим читаемым синтаксисом
+# Комментарии начинаются с символа #`,
+        exercise: {
+          question: 'Кто создал язык Python?',
+          options: ['Линус Торвальдс', 'Гвидо ван Россум', 'Джеймс Гослинг', 'Бьёрн Страуструп'],
+          correct: 1,
+          explanation: 'Python был создан голландским программистом Гвидо ван Россумом и впервые выпущен в 1991 году.'
+        }
+      },
+      {
+        id: 'intro-2',
+        title: 'Установка и настройка',
+        content: `**Установка Python:**
+
+1. Перейдите на официальный сайт python.org
+2. Скачайте последнюю версию Python
+3. При установке на Windows обязательно отметьте "Add Python to PATH"
+4. Проверьте установку командой в терминале:
+
+**Основные инструменты:**
+- **Python Interpreter** — интерпретатор для запуска кода
+- **IDLE** — встроенная среда разработки
+- **VS Code** — популярный редактор кода
+- **PyCharm** — профессиональная IDE для Python
+- **Jupyter Notebook** — интерактивная среда для анализа данных
+
+**Первый запуск:**
+Откройте терминал и введите \`python\` или \`python3\`, затем:
+\`\`\`
+>>> print("Hello!")
+Hello!
+\`\`\``,
+        code: `# Запуск Python из командной строки:
+# python script.py
+
+# Или интерактивный режим:
+# >>> 2 + 2
+# 4
+
+# Проверка версии:
+import sys
+print(f"Версия Python: {sys.version}")`,
+        exercise: {
+          question: 'Какую команду нужно выполнить для проверки версии Python?',
+          options: ['python --check', 'python --version', 'python -v', 'python version'],
+          correct: 1,
+          explanation: 'Команда "python --version" (или "python -V") показывает установленную версию Python.'
+        }
+      },
+      {
+        id: 'intro-3',
+        title: 'Первая программа',
+        content: `Давайте напишем вашу первую программу на Python!
+
+**Функция print()** выводит текст на экран. Текст (строка) заключается в кавычки — одинарные или двойные.
+
+**Правила:**
+- Каждая инструкция обычно на отдельной строке
+- Python чувствителен к регистру: Print ≠ print
+- Строки можно заключать в 'одинарные' или "двойные" кавычки
+
+**Синтаксис:**
+\`\`\`python
+print("Текст для вывода")
+\`\`\`
+
+Python — интерпретируемый язык, код выполняется строка за строкой сверху вниз.`,
+        code: `# Первая программа
+print("Привет, мир!")
+
+# Несколько выводов
+print("Меня зовут Python-разработчик")
+print("Мне нравится программирование")
+
+# Математические вычисления
+print(2 + 3)
+print(10 * 5)
+
+# Вывод нескольких значений
+print("Результат:", 2 + 2)`,
+        exercise: {
+          question: 'Какая функция используется для вывода текста на экран в Python?',
+          options: ['echo()', 'console.log()', 'print()', 'write()'],
+          correct: 2,
+          explanation: 'В Python для вывода текста на экран используется функция print().'
+        }
+      }
+    ]
+  },
+  {
+    id: 'variables',
+    title: 'Переменные и типы данных',
+    icon: '📦',
+    description: 'Работа с переменными и основными типами данных',
+    lessons: [
+      {
+        id: 'var-1',
+        title: 'Переменные',
+        content: `**Переменная** — это именованная область памяти для хранения данных.
+
+**Правила именования переменных:**
+- Начинается с буквы или символа подчёркивания (_)
+- Может содержать буквы, цифры и _
+- Не может начинаться с цифры
+- Регистрозависимые: name ≠ Name
+- Не может совпадать с ключевыми словами Python
+
+**Присваивание:**
+\`\`\`python
+имя_переменной = значение
+\`\`\`
+
+Python — язык с **динамической типизацией**: тип определяется автоматически при присваивании.
+
+**Множественное присваивание:**
+\`\`\`python
+x, y, z = 1, 2, 3
+a = b = c = 0
+\`\`\``,
+        code: `# Создание переменных
+name = "Алиса"
+age = 25
+height = 1.68
+is_student = True
+
+# Вывод переменных
+print(name)
+print(age)
+print(height)
+print(is_student)
+
+# Множественное присваивание
+x, y, z = 10, 20, 30
+print(x, y, z)
+
+# Проверка типа
+print(type(name))    # <class 'str'>
+print(type(age))     # <class 'int'>
+print(type(height))  # <class 'float'>`,
+        exercise: {
+          question: 'Какое из имён переменных НЕДОПУСТИМО в Python?',
+          options: ['_name', 'my_var', '2nd_place', 'firstName'],
+          correct: 2,
+          explanation: 'Имя переменной не может начинаться с цифры. 2nd_place — недопустимое имя.'
+        }
+      },
+      {
+        id: 'var-2',
+        title: 'Числовые типы',
+        content: `В Python есть два основных числовых типа:
+
+**int (целые числа):**
+- 0, 1, -5, 1000000
+- Не имеют ограничения по размеру
+- Поддерживают операции: +, -, *, /, //, %, **
+
+**float (числа с плавающей точкой):**
+- 3.14, -0.5, 1.0, 2.5e10
+- Двойная точность (64 бита)
+- Могут возникать ошибки округления
+
+**Операции с числами:**
+- \`+\` сложение
+- \`-\` вычитание
+- \`*\` умножение
+- \`/\` деление (всегда float)
+- \`//\` целочисленное деление
+- \`%\` остаток от деления
+- \`**\` возведение в степень`,
+        code: `# Целые числа (int)
+a = 10
+b = -5
+c = 1_000_000  # можно использовать _ для читаемости
+
+# Числа с плавающей точкой (float)
+pi = 3.14159
+temp = -20.5
+scientific = 2.5e10  # 25000000000.0
+
+# Арифметические операции
+print(10 + 3)   # 13
+print(10 - 3)   # 7
+print(10 * 3)   # 30
+print(10 / 3)   # 3.3333...
+print(10 // 3)  # 3 (целочисленное деление)
+print(10 % 3)   # 1 (остаток)
+print(2 ** 10)  # 1024 (степень)
+
+# Преобразование типов
+x = int(3.7)    # 3
+y = float(5)    # 5.0
+z = int("42")   # 42`,
+        exercise: {
+          question: 'Что вернёт выражение 10 // 3 в Python?',
+          options: ['3.33', '3', '4', '1'],
+          correct: 1,
+          explanation: 'Оператор // выполняет целочисленное деление. 10 // 3 = 3 (отбрасывает дробную часть).'
+        }
+      },
+      {
+        id: 'var-3',
+        title: 'Строки (str)',
+        content: `**Строка (str)** — это последовательность символов.
+
+**Создание строк:**
+\`\`\`python
+s1 = "Привет"
+s2 = 'Мир'
+s3 = """Многострочная
+строка"""
+\`\`\`
+
+**Операции со строками:**
+- Конкатенация: \`"Hello" + " " + "World"\`
+- Повторение: \`"Ha" * 3\` → "HaHaHa"
+- Индексация: \`s[0]\` — первый символ
+- Срезы: \`s[1:4]\` — подстрока
+- Длина: \`len(s)\`
+
+**f-строки (форматирование):**
+\`\`\`python
+name = "Мир"
+print(f"Привет, {name}!")
+\`\`\``,
+        code: `# Создание строк
+greeting = "Привет"
+name = 'Python'
+multiline = """Это
+многострочная
+строка"""
+
+# Конкатенация
+full = greeting + ", " + name + "!"
+print(full)  # Привет, Python!
+
+# Повторение
+print("Ha" * 3)  # HaHaHa
+
+# Индексация и срезы
+text = "Программирование"
+print(text[0])     # П
+print(text[-1])    # е
+print(text[0:4])   # Прог
+print(text[::2])   # Пормрмвн
+
+# f-строки
+age = 30
+print(f"Мне {age} лет")
+print(f"Через 5 лет мне будет {age + 5}")
+
+# Методы строк
+print("hello".upper())      # HELLO
+print("HELLO".lower())      # hello
+print("hello world".title()) # Hello World
+print(len("Python"))         # 6`,
+        exercise: {
+          question: 'Что вернёт выражение "Python"[1:4]?',
+          options: ['Pyth', 'yth', 'ytho', 'Pyt'],
+          correct: 1,
+          explanation: 'Срез [1:4] берёт символы с индекса 1 до 4 (не включая). "Python"[1:4] = "yth".'
+        }
+      },
+      {
+        id: 'var-4',
+        title: 'Логический тип и None',
+        content: `**bool (логический тип)** имеет два значения:
+- \`True\` — истина
+- \`False\` — ложь
+
+**Логические операторы:**
+- \`and\` — логическое И
+- \`or\` — логическое ИЛИ
+- \`not\` — логическое НЕ
+
+**None** — специальное значение, означающее "ничего" или отсутствие значения.
+
+**Приведение к bool:**
+- \`False\`: 0, "", [], {}, None, False
+- \`True\`: всё остальное`,
+        code: `# Логический тип
+is_active = True
+is_deleted = False
+
+print(type(is_active))  # <class 'bool'>
+
+# Логические операторы
+print(True and True)   # True
+print(True and False)  # False
+print(True or False)   # True
+print(not True)        # False
+
+# Сравнения возвращают bool
+print(5 > 3)    # True
+print(5 == 3)   # False
+print(5 != 3)   # True
+print(5 >= 5)   # True
+
+# None
+result = None
+print(result)        # None
+print(result is None) # True
+print(type(result))  # <class 'NoneType'>
+
+# Приведение к bool
+print(bool(0))       # False
+print(bool(""))      # False
+print(bool([]))      # False
+print(bool(42))      # True
+print(bool("text"))  # True`,
+        exercise: {
+          question: 'Что вернёт выражение bool("")?',
+          options: ['True', 'False', 'None', 'Ошибка'],
+          correct: 1,
+          explanation: 'Пустая строка приводится к False. Только непустые строки дают True.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'operators',
+    title: 'Операторы и выражения',
+    icon: '🔧',
+    description: 'Арифметические, сравнения и логические операторы',
+    lessons: [
+      {
+        id: 'op-1',
+        title: 'Операторы сравнения',
+        content: `**Операторы сравнения** используются для сравнения значений и возвращают True или False:
+
+| Оператор | Описание | Пример |
+|----------|----------|--------|
+| == | Равно | 5 == 5 → True |
+| != | Не равно | 5 != 3 → True |
+| > | Больше | 5 > 3 → True |
+| < | Меньше | 5 < 3 → False |
+| >= | Больше или равно | 5 >= 5 → True |
+| <= | Меньше или равно | 3 <= 5 → True |
+
+**Цепочки сравнений:**
+\`\`\`python
+x = 5
+print(1 < x < 10)  # True
+\`\`\``,
+        code: `# Операторы сравнения
+a = 10
+b = 20
+
+print(a == b)  # False
+print(a != b)  # True
+print(a > b)   # False
+print(a < b)   # True
+print(a >= 10) # True
+print(b <= 15) # False
+
+# Цепочки сравнений
+x = 15
+print(10 < x < 20)   # True
+print(10 < x < 14)   # False
+print(10 <= x <= 20) # True
+
+# Сравнение строк (по алфавиту)
+print("apple" < "banana")  # True
+print("abc" < "abd")       # True
+
+# Сравнение с None
+value = None
+print(value is None)     # True
+print(value == None)     # True (но лучше использовать is)`,
+        exercise: {
+          question: 'Что вернёт выражение 5 >= 5?',
+          options: ['True', 'False', '5', 'Ошибка'],
+          correct: 0,
+          explanation: 'Оператор >= означает "больше или равно". 5 >= 5 истинно, так как 5 равно 5.'
+        }
+      },
+      {
+        id: 'op-2',
+        title: 'Логические операторы',
+        content: `**Логические операторы** комбинируют логические значения:
+
+| Оператор | Описание | Пример |
+|----------|----------|--------|
+| and | Оба истинны | True and False → False |
+| or | Хотя бы один истинен | True or False → True |
+| not | Отрицание | not True → False |
+
+**Приоритет:** not > and > or
+
+**Короткое замыкание (short-circuit):**
+- \`and\` — если первое False, второе не вычисляется
+- \`or\` — если первое True, второе не вычисляется`,
+        code: `# Логические операторы
+x = 10
+
+# and - оба условия должны быть True
+print(x > 5 and x < 20)   # True
+print(x > 5 and x < 8)    # False
+
+# or - хотя бы одно условие True
+print(x > 15 or x < 20)   # True
+print(x > 15 or x < 5)    # False
+
+# not - отрицание
+print(not (x > 5))        # False
+print(not (x > 15))       # True
+
+# Комбинирование
+age = 25
+has_license = True
+can_drive = age >= 18 and has_license
+print(f"Может водить: {can_drive}")  # True
+
+# Короткое замыкание
+def expensive():
+    print("Эта функция вызвана!")
+    return True
+
+result = False and expensive()  # expensive() НЕ вызывается
+print(result)  # False
+
+result = True or expensive()    # expensive() НЕ вызывается
+print(result)  # True`,
+        exercise: {
+          question: 'Что вернёт выражение True and False or True?',
+          options: ['True', 'False', 'None', 'Ошибка'],
+          correct: 0,
+          explanation: 'Сначала and: True and False = False. Затем or: False or True = True.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'conditions',
+    title: 'Условные конструкции',
+    icon: '🔀',
+    description: 'if, elif, else — управление потоком программы',
+    lessons: [
+      {
+        id: 'cond-1',
+        title: 'Конструкция if',
+        content: `**Условная конструкция if** позволяет выполнять код только при определённых условиях.
+
+**Синтаксис:**
+\`\`\`python
+if условие:
+    # код, если условие True
+\`\`\`
+
+**Важно:**
+- Отступы (обычно 4 пробела) определяют блок кода
+- Условие должно возвращать True или False
+- Двоеточие (:) обязательно после условия
+
+**if-else:**
+\`\`\`python
+if условие:
+    # если True
+else:
+    # если False
+\`\`\``,
+        code: `# Простой if
+age = 18
+if age >= 18:
+    print("Вы совершеннолетний")
+
+# if-else
+temperature = 25
+if temperature > 30:
+    print("Жарко!")
+else:
+    print("Не жарко")
+
+# if-elif-else
+score = 85
+if score >= 90:
+    print("Отлично! (A)")
+elif score >= 80:
+    print("Хорошо! (B)")
+elif score >= 70:
+    print("Неплохо (C)")
+elif score >= 60:
+    print("Удовлетворительно (D)")
+else:
+    print("Нужно подтянуть (F)")
+
+# Вложенные условия
+age = 25
+has_ticket = True
+if age >= 18:
+    if has_ticket:
+        print("Добро пожаловать!")
+    else:
+        print("Купите билет")
+else:
+    print("Только для взрослых")`,
+        exercise: {
+          question: 'Что выведет код: x = 5; if x > 3: print("A") else: print("B")?',
+          options: ['A', 'B', 'AB', 'Ошибка'],
+          correct: 0,
+          explanation: 'x = 5, условие x > 3 истинно (True), поэтому выполнится ветка if и выведется "A".'
+        }
+      },
+      {
+        id: 'cond-2',
+        title: 'Тернарный оператор',
+        content: `**Тернарный оператор** — сокращённая запись if-else в одну строку.
+
+**Синтаксис:**
+\`\`\`python
+результат = значение_если_True if условие else значение_если_False
+\`\`\`
+
+**Когда использовать:**
+- Простые присваивания
+- Возврат значений из функций
+- Не стоит использовать для сложной логики
+
+**Примеры:**
+\`\`\`python
+status = "adult" if age >= 18 else "minor"
+max_val = a if a > b else b
+\`\`\``,
+        code: `# Тернарный оператор
+age = 20
+status = "взрослый" if age >= 18 else "несовершеннолетний"
+print(status)  # взрослый
+
+# Примеры использования
+x = 10
+result = "чётное" if x % 2 == 0 else "нечётное"
+print(result)  # чётное
+
+# Максимум из двух чисел
+a, b = 15, 22
+maximum = a if a > b else b
+print(f"Максимум: {maximum}")  # 22
+
+# Вывод с тернарным оператором
+score = 75
+print("Сдал" if score >= 60 else "Не сдал")  # Сдал
+
+# Вложенный тернарный (не рекомендуется)
+num = 0
+sign = "положительное" if num > 0 else ("отрицательное" if num < 0 else "ноль")
+print(sign)  # ноль
+
+# В списке
+numbers = [1, -2, 3, -4, 5]
+labels = ["+" if n > 0 else "-" for n in numbers]
+print(labels)  # ['+', '-', '+', '-', '+']`,
+        exercise: {
+          question: 'Что вернёт: x = 7; result = "да" if x > 5 else "нет"?',
+          options: ['"да"', '"нет"', 'True', '7'],
+          correct: 0,
+          explanation: 'x = 7, условие x > 5 истинно, поэтому тернарный оператор вернёт "да".'
+        }
+      }
+    ]
+  },
+  {
+    id: 'loops',
+    title: 'Циклы',
+    icon: '🔄',
+    description: 'for, while, break, continue',
+    lessons: [
+      {
+        id: 'loop-1',
+        title: 'Цикл for',
+        content: `**Цикл for** используется для перебора элементов последовательности.
+
+**Синтаксис:**
+\`\`\`python
+for переменная in последовательность:
+    # тело цикла
+\`\`\`
+
+**range()** генерирует последовательность чисел:
+- \`range(n)\` — от 0 до n-1
+- \`range(start, stop)\` — от start до stop-1
+- \`range(start, stop, step)\` — с шагом
+
+**enumerate()** — перебор с индексом:
+\`\`\`python
+for i, value in enumerate(list):
+    print(i, value)
+\`\`\``,
+        code: `# Перебор списка
+fruits = ["яблоко", "банан", "вишня"]
+for fruit in fruits:
+    print(fruit)
+
+# range()
+for i in range(5):
+    print(i)  # 0, 1, 2, 3, 4
+
+for i in range(2, 8):
+    print(i)  # 2, 3, 4, 5, 6, 7
+
+for i in range(0, 10, 2):
+    print(i)  # 0, 2, 4, 6, 8
+
+# Перебор строки
+for char in "Python":
+    print(char, end=" ")  # P y t h o n
+
+# enumerate()
+colors = ["красный", "зелёный", "синий"]
+for i, color in enumerate(colors):
+    print(f"{i}: {color}")
+
+# Вложенные циклы
+for i in range(1, 4):
+    for j in range(1, 4):
+        print(f"{i}*{j}={i*j}", end="  ")
+    print()`,
+        exercise: {
+          question: 'Сколько раз выполнится цикл: for i in range(3)?',
+          options: ['2', '3', '4', '1'],
+          correct: 1,
+          explanation: 'range(3) генерирует числа 0, 1, 2 — всего 3 итерации.'
+        }
+      },
+      {
+        id: 'loop-2',
+        title: 'Цикл while',
+        content: `**Цикл while** выполняется, пока условие истинно.
+
+**Синтаксис:**
+\`\`\`python
+while условие:
+    # тело цикла
+\`\`\`
+
+**⚠️ Осторожно с бесконечными циклами!**
+Всегда убедитесь, что условие станет False.
+
+**break** — прерывает цикл
+**continue** — переходит к следующей итерации
+**else** после цикла — выполняется, если цикл не был прерван break`,
+        code: `# Простой while
+count = 0
+while count < 5:
+    print(count)
+    count += 1
+
+# Ввод данных
+# password = ""
+# while password != "secret":
+#     password = input("Пароль: ")
+# print("Доступ разрешён!")
+
+# break — выход из цикла
+for i in range(100):
+    if i == 5:
+        break
+    print(i)  # 0, 1, 2, 3, 4
+
+# continue — пропуск итерации
+for i in range(10):
+    if i % 2 == 0:
+        continue
+    print(i)  # 1, 3, 5, 7, 9
+
+# while-else
+n = 7
+i = 2
+while i < n:
+    if n % i == 0:
+        print(f"{n} делится на {i}")
+        break
+    i += 1
+else:
+    print(f"{n} — простое число")
+
+# Счётчик с условием
+total = 0
+num = 1
+while total < 100:
+    total += num
+    num += 1
+print(f"Сумма: {total}, слагаемых: {num - 1}")`,
+        exercise: {
+          question: 'Что делает оператор break в цикле?',
+          options: ['Пропускает итерацию', 'Прерывает цикл', 'Перезапускает цикл', 'Ничего не делает'],
+          correct: 1,
+          explanation: 'break немедленно прерывает выполнение цикла и передаёт управление следующей инструкции после цикла.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'functions',
+    title: 'Функции',
+    icon: '⚡',
+    description: 'Создание и использование функций',
+    lessons: [
+      {
+        id: 'func-1',
+        title: 'Определение функций',
+        content: `**Функция** — это именованный блок кода, который можно вызывать многократно.
+
+**Синтаксис:**
+\`\`\`python
+def имя_функции(параметры):
+    # тело функции
+    return результат  # опционально
+\`\`\`
+
+**Правила:**
+- \`def\` — ключевое слово для определения функции
+- Параметры указываются в скобках
+- \`return\` возвращает значение (без return → None)
+- Функция должна быть определена до вызова
+
+**Docstring** — документация функции:
+\`\`\`python
+def greet(name):
+    """Приветствует пользователя по имени."""
+    return f"Привет, {name}!"
+\`\`\``,
+        code: `# Простая функция
+def greet():
+    print("Привет, мир!")
+
+greet()  # Вызов функции
+
+# Функция с параметрами
+def greet_user(name):
+    print(f"Привет, {name}!")
+
+greet_user("Алиса")
+greet_user("Борис")
+
+# Функция с return
+def add(a, b):
+    return a + b
+
+result = add(3, 5)
+print(result)  # 8
+
+# Функция с несколькими return
+def check_number(n):
+    if n > 0:
+        return "положительное"
+    elif n < 0:
+        return "отрицательное"
+    return "ноль"
+
+print(check_number(5))   # положительное
+print(check_number(-3))  # отрицательное
+print(check_number(0))   # ноль
+
+# Функция с несколькими параметрами
+def power(base, exponent):
+    """Возводит base в степень exponent."""
+    return base ** exponent
+
+print(power(2, 10))  # 1024
+
+# Функция без return (возвращает None)
+def say_hello():
+    print("Hello!")
+
+result = say_hello()
+print(result)  # None`,
+        exercise: {
+          question: 'Что вернёт функция без оператора return?',
+          options: ['0', '""', 'None', 'Ошибка'],
+          correct: 2,
+          explanation: 'Если функция не имеет оператора return (или return без значения), она возвращает None.'
+        }
+      },
+      {
+        id: 'func-2',
+        title: 'Аргументы функций',
+        content: `**Типы аргументов:**
+
+1. **Позиционные** — передаются по порядку
+2. **Именованные (keyword)** — передаются по имени
+3. **По умолчанию** — имеют значение по умолчанию
+4. ***args** — произвольное количество позиционных
+5. ****kwargs** — произвольное количество именованных
+
+**Порядок параметров:**
+\`\`\`python
+def func(positional, default=val, *args, **kwargs):
+    pass
+\`\`\``,
+        code: `# Аргументы по умолчанию
+def greet(name, greeting="Привет"):
+    print(f"{greeting}, {name}!")
+
+greet("Алиса")              # Привет, Алиса!
+greet("Борис", "Здравствуйте")  # Здравствуйте, Борис!
+
+# Именованные аргументы
+def create_user(name, age, city="Москва"):
+    print(f"{name}, {age} лет, г. {city}")
+
+create_user("Иван", 25)
+create_user(age=30, name="Мария", city="СПб")
+
+# *args — произвольное количество аргументов
+def sum_all(*args):
+    return sum(args)
+
+print(sum_all(1, 2, 3))      # 6
+print(sum_all(1, 2, 3, 4, 5)) # 15
+
+# **kwargs — именованные аргументы
+def print_info(**kwargs):
+    for key, value in kwargs.items():
+        print(f"{key}: {value}")
+
+print_info(name="Алиса", age=25, city="Москва")
+
+# Комбинирование
+def func(a, b, *args, **kwargs):
+    print(f"a={a}, b={b}")
+    print(f"args={args}")
+    print(f"kwargs={kwargs}")
+
+func(1, 2, 3, 4, 5, x=10, y=20)`,
+        exercise: {
+          question: 'Что такое *args в определении функции?',
+          options: [
+            'Обязательный аргумент',
+            'Кортеж из произвольного числа позиционных аргументов',
+            'Словарь аргументов',
+            'Аргумент по умолчанию'
+          ],
+          correct: 1,
+          explanation: '*args собирает все дополнительные позиционные аргументы в кортеж.'
+        }
+      },
+      {
+        id: 'func-3',
+        title: 'Lambda и области видимости',
+        content: `**Lambda-функции** — анонимные функции в одну строку:
+\`\`\`python
+имя = lambda параметры: выражение
+\`\`\`
+
+**Области видимости (LEGB):**
+1. **L**ocal — локальная (внутри функции)
+2. **E**nclosing — объемлющая (вложенные функции)
+3. **G**lobal — глобальная (модуль)
+4. **B**uilt-in — встроенная (Python)
+
+**Ключевые слова:**
+- \`global\` — использовать глобальную переменную
+- \`nonlocal\` — использовать переменную из объемлющей области`,
+        code: `# Lambda-функции
+square = lambda x: x ** 2
+print(square(5))  # 25
+
+add = lambda a, b: a + b
+print(add(3, 4))  # 7
+
+# Lambda с sorted()
+words = ["banana", "apple", "cherry"]
+sorted_words = sorted(words, key=lambda w: len(w))
+print(sorted_words)  # ['apple', 'banana', 'cherry']
+
+# Lambda с map()
+numbers = [1, 2, 3, 4, 5]
+squared = list(map(lambda x: x**2, numbers))
+print(squared)  # [1, 4, 9, 16, 25]
+
+# Lambda с filter()
+evens = list(filter(lambda x: x % 2 == 0, numbers))
+print(evens)  # [2, 4]
+
+# Области видимости
+x = "глобальная"
+
+def outer():
+    x = "объемлющая"
+
+    def inner():
+        x = "локальная"
+        print(f"inner: {x}")
+
+    inner()
+    print(f"outer: {x}")
+
+outer()
+print(f"global: {x}")
+
+# global
+count = 0
+def increment():
+    global count
+    count += 1
+
+increment()
+increment()
+print(count)  # 2`,
+        exercise: {
+          question: 'Что вернёт: (lambda x, y: x * y)(3, 4)?',
+          options: ['7', '12', '34', 'Ошибка'],
+          correct: 1,
+          explanation: 'Lambda-функция умножает x на y. 3 * 4 = 12. Функция сразу вызывается с аргументами (3, 4).'
+        }
+      }
+    ]
+  },
+  {
+    id: 'lists',
+    title: 'Списки и кортежи',
+    icon: '📋',
+    description: 'Работа со списками, кортежами и их методами',
+    lessons: [
+      {
+        id: 'list-1',
+        title: 'Списки (list)',
+        content: `**Список** — упорядоченная изменяемая коллекция элементов.
+
+**Создание:**
+\`\`\`python
+empty = []
+numbers = [1, 2, 3]
+mixed = [1, "text", True, 3.14]
+\`\`\`
+
+**Основные операции:**
+- Индексация: \`lst[0]\`
+- Срезы: \`lst[1:3]\`
+- Добавление: \`append()\`, \`insert()\`, \`extend()\`
+- Удаление: \`remove()\`, \`pop()\`, \`del\`
+- Длина: \`len()\`
+- Сортировка: \`sort()\`, \`sorted()\`
+
+**Списковое включение (list comprehension):**
+\`\`\`python
+[выражение for элемент in последовательность if условие]
+\`\`\``,
+        code: `# Создание списков
+numbers = [1, 2, 3, 4, 5]
+mixed = [1, "hello", True, 3.14]
+empty = []
+
+# Индексация
+print(numbers[0])   # 1
+print(numbers[-1])  # 5
+print(numbers[1:3]) # [2, 3]
+
+# Методы добавления
+fruits = ["яблоко"]
+fruits.append("банан")      # ["яблоко", "банан"]
+fruits.insert(0, "вишня")   # ["вишня", "яблоко", "банан"]
+fruits.extend(["груша", "манго"])
+
+# Методы удаления
+fruits.remove("банан")  # по значению
+popped = fruits.pop()   # последний элемент
+popped = fruits.pop(0)  # по индексу
+
+# Полезные методы
+nums = [3, 1, 4, 1, 5, 9, 2, 6]
+print(len(nums))     # 8
+print(min(nums))     # 1
+print(max(nums))     # 9
+print(sum(nums))     # 31
+nums.sort()          # сортировка на месте
+nums.reverse()       # разворот
+
+# List comprehension
+squares = [x**2 for x in range(10)]
+print(squares)  # [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+
+evens = [x for x in range(20) if x % 2 == 0]
+print(evens)  # [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+
+# Вложенные списки
+matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+print(matrix[1][2])  # 6`,
+        exercise: {
+          question: 'Что вернёт [x**2 for x in range(4)]?',
+          options: ['[1, 4, 9, 16]', '[0, 1, 4, 9]', '[0, 1, 4, 9, 16]', '[1, 2, 3, 4]'],
+          correct: 1,
+          explanation: 'range(4) даёт 0,1,2,3. Квадраты: 0²=0, 1²=1, 2²=4, 3²=9. Результат: [0, 1, 4, 9].'
+        }
+      },
+      {
+        id: 'list-2',
+        title: 'Кортежи (tuple)',
+        content: `**Кортеж** — упорядоченная НЕизменяемая коллекция.
+
+**Отличия от списка:**
+- Нельзя изменить после создания
+- Использует меньше памяти
+- Может быть ключом словаря
+- Создаётся с помощью ()
+
+**Когда использовать:**
+- Возврат нескольких значений из функции
+- Данные, которые не должны меняться
+- Ключи словаря
+- Распаковка переменных`,
+        code: `# Создание кортежей
+point = (3, 4)
+colors = ("красный", "зелёный", "синий")
+single = (42,)  # кортеж из одного элемента (запятая обязательна!)
+empty_tuple = ()
+
+# Кортеж без скобок (упаковка)
+coordinates = 10, 20, 30
+print(coordinates)  # (10, 20, 30)
+
+# Распаковка
+x, y, z = coordinates
+print(x, y, z)  # 10 20 30
+
+# Распаковка с *
+first, *rest = (1, 2, 3, 4, 5)
+print(first)  # 1
+print(rest)   # [2, 3, 4, 5]
+
+# Индексация (как у списков)
+print(colors[0])   # красный
+print(colors[-1])  # синий
+print(colors[1:])  # ('зелёный', 'синий')
+
+# Методы кортежа
+t = (1, 2, 2, 3, 2, 4)
+print(t.count(2))  # 3 (количество двоек)
+print(t.index(3))  # 3 (индекс первого вхождения)
+
+# Функция возвращает кортеж
+def min_max(numbers):
+    return min(numbers), max(numbers)
+
+minimum, maximum = min_max([3, 1, 4, 1, 5, 9])
+print(f"Мин: {minimum}, Макс: {maximum}")
+
+# Неизменяемость
+# t[0] = 100  # TypeError!
+# Но можно заменить весь кортеж
+t = (1, 2, 3)
+t = (4, 5, 6)  # это новый объект`,
+        exercise: {
+          question: 'Как создать кортеж из одного элемента?',
+          options: ['(1)', '(1,)', '[1]', 'tuple(1)'],
+          correct: 1,
+          explanation: 'Кортеж из одного элемента создаётся с запятой: (1,). Без запятой (1) — это просто число в скобках.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'dicts',
+    title: 'Словари и множества',
+    icon: '📖',
+    description: 'Работа со словарями (dict) и множествами (set)',
+    lessons: [
+      {
+        id: 'dict-1',
+        title: 'Словари (dict)',
+        content: `**Словарь** — неупорядоченная коллекция пар ключ-значение.
+
+**Создание:**
+\`\`\`python
+d = {"ключ": "значение"}
+d = dict(key="value")
+\`\`\`
+
+**Операции:**
+- Доступ: \`d["ключ"]\` или \`d.get("ключ")\`
+- Добавление: \`d["новый_ключ"] = значение\`
+- Удаление: \`del d["ключ"]\` или \`d.pop("ключ")\`
+- Проверка: \`"ключ" in d\`
+
+**Методы:**
+- \`keys()\` — все ключи
+- \`values()\` — все значения
+- \`items()\` — все пары
+- \`get(key, default)\` — безопасный доступ
+- \`update()\` — объединение словарей`,
+        code: `# Создание словаря
+person = {
+    "name": "Алиса",
+    "age": 25,
+    "city": "Москва"
+}
+
+# Доступ к значениям
+print(person["name"])        # Алиса
+print(person.get("age"))     # 25
+print(person.get("phone", "Не указан"))  # Не указан
+
+# Изменение и добавление
+person["age"] = 26           # изменить
+person["email"] = "a@mail.ru" # добавить
+
+# Удаление
+del person["email"]
+removed = person.pop("city", None)
+
+# Перебор словаря
+for key in person:
+    print(f"{key}: {person[key]}")
+
+for key, value in person.items():
+    print(f"{key}: {value}")
+
+# Методы
+print(person.keys())    # все ключи
+print(person.values())  # все значения
+print(person.items())   # все пары
+
+# Проверка наличия ключа
+if "name" in person:
+    print("Имя есть!")
+
+# Dict comprehension
+squares = {x: x**2 for x in range(6)}
+print(squares)  # {0: 0, 1: 1, 2: 4, 3: 9, 4: 16, 5: 25}
+
+# Вложенные словари
+students = {
+    "student1": {"name": "Алиса", "grade": 5},
+    "student2": {"name": "Борис", "grade": 4}
+}
+print(students["student1"]["name"])  # Алиса
+
+# Объединение словарей
+d1 = {"a": 1, "b": 2}
+d2 = {"b": 3, "c": 4}
+merged = {**d1, **d2}  # {'a': 1, 'b': 3, 'c': 4}
+# Или: merged = d1 | d2 (Python 3.9+)`,
+        exercise: {
+          question: 'Что вернёт d.get("key", "default") если ключа "key" нет в словаре d?',
+          options: ['None', 'Ошибка', '"default"', '0'],
+          correct: 2,
+          explanation: 'Метод get() возвращает значение по умолчанию (второй аргумент), если ключ не найден.'
+        }
+      },
+      {
+        id: 'dict-2',
+        title: 'Множества (set)',
+        content: `**Множество** — неупорядоченная коллекция уникальных элементов.
+
+**Создание:**
+\`\`\`python
+s = {1, 2, 3}
+s = set([1, 2, 2, 3])  # {1, 2, 3}
+\`\`\`
+
+**Операции:**
+- Объединение: \`a | b\` или \`a.union(b)\`
+- Пересечение: \`a & b\` или \`a.intersection(b)\`
+- Разность: \`a - b\` или \`a.difference(b)\`
+- Симметрическая разность: \`a ^ b\`
+
+**Методы:**
+- \`add()\` — добавить элемент
+- \`remove()\` / \`discard()\` — удалить
+- \`in\` — проверка (O(1)!)`,
+        code: `# Создание множеств
+fruits = {"яблоко", "банан", "вишня"}
+numbers = set([1, 2, 2, 3, 3, 3])  # {1, 2, 3}
+empty_set = set()  # НЕ {} (это пустой словарь!)
+
+# Уникальность
+nums = [1, 2, 2, 3, 3, 3, 4]
+unique = set(nums)
+print(unique)  # {1, 2, 3, 4}
+
+# Операции над множествами
+a = {1, 2, 3, 4}
+b = {3, 4, 5, 6}
+
+print(a | b)   # {1, 2, 3, 4, 5, 6} объединение
+print(a & b)   # {3, 4} пересечение
+print(a - b)   # {1, 2} разность
+print(a ^ b)   # {1, 2, 5, 6} симм. разность
+
+# Методы
+fruits.add("манго")
+fruits.remove("банан")   # ошибка если нет
+fruits.discard("груша")  # нет ошибки если нет
+
+# Проверка (очень быстро!)
+print("яблоко" in fruits)  # True
+
+# Set comprehension
+squares = {x**2 for x in range(5)}
+print(squares)  # {0, 1, 4, 9, 16}
+
+# Практическое применение
+# Удаление дубликатов из списка
+names = ["Алиса", "Борис", "Алиса", "Виктор", "Борис"]
+unique_names = list(set(names))
+print(unique_names)
+
+# Поиск общих элементов
+python_devs = {"Алиса", "Борис", "Виктор"}
+js_devs = {"Борис", "Галина", "Дмитрий"}
+both = python_devs & js_devs
+print(f"Знают оба: {both}")  # {'Борис'}`,
+        exercise: {
+          question: 'Что вернёт {1,2,3} & {2,3,4}?',
+          options: ['{1,2,3,4}', '{2,3}', '{1,4}', '{}'],
+          correct: 1,
+          explanation: 'Оператор & (пересечение) возвращает элементы, присутствующие в обоих множествах: {2, 3}.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'strings',
+    title: 'Строки и форматирование',
+    icon: '✏️',
+    description: 'Продвинутая работа со строками',
+    lessons: [
+      {
+        id: 'str-1',
+        title: 'Методы строк',
+        content: `Строки в Python имеют множество полезных методов:
+
+**Поиск и замена:**
+- \`find()\`, \`index()\`, \`count()\`
+- \`replace()\`, \`strip()\`
+
+**Проверки:**
+- \`startswith()\`, \`endswith()\`
+- \`isdigit()\`, \`isalpha()\`, \`isalnum()\`
+
+**Преобразование:**
+- \`split()\`, \`join()\`
+- \`upper()\`, \`lower()\`, \`title()\`, \`capitalize()\`
+- \`center()\`, \`ljust()\`, \`rjust()\`, \`zfill()\``,
+        code: `text = "  Привет, Мир!  "
+
+# Обрезка пробелов
+print(text.strip())    # "Привет, Мир!"
+print(text.lstrip())   # "Привет, Мир!  "
+print(text.rstrip())   # "  Привет, Мир!"
+
+# Регистр
+print(text.upper())      # ПРИВЕТ, МИР!
+print(text.lower())      # привет, мир!
+print(text.title())      # Привет, Мир!
+print(text.capitalize()) # Привет, мир!
+print(text.swapcase())   # пРИВЕТ, мИР!
+
+# Поиск
+text = "Hello, World!"
+print(text.find("World"))     # 7
+print(text.find("Python"))    # -1
+print(text.index("World"))    # 7
+print(text.count("l"))        # 3
+print(text.startswith("Hello")) # True
+print(text.endswith("!"))       # True
+
+# Замена
+print(text.replace("World", "Python"))
+
+# Split и Join
+csv_line = "Алиса,25,Москва"
+parts = csv_line.split(",")
+print(parts)  # ['Алиса', '25', 'Москва']
+
+words = ["Python", "is", "great"]
+sentence = " ".join(words)
+print(sentence)  # Python is great
+
+# Проверки
+print("12345".isdigit())    # True
+print("abc".isalpha())      # True
+print("abc123".isalnum())   # True
+print("Hello World".istitle()) # False
+
+# Выравнивание
+print("Python".center(20, "*"))  # *******Python********
+print("Python".ljust(20, "-"))   # Python--------------
+print("Python".rjust(20, "-"))   # --------------Python
+print("42".zfill(5))             # 00042`,
+        exercise: {
+          question: 'Что вернёт "hello world".split()?',
+          options: ['["hello world"]', '["hello", "world"]', '["h","e","l","l","o"," ","w","o","r","l","d"]', 'Ошибка'],
+          correct: 1,
+          explanation: 'split() без аргументов разделяет строку по пробелам: ["hello", "world"].'
+        }
+      },
+      {
+        id: 'str-2',
+        title: 'Форматирование строк',
+        content: `**Способы форматирования строк:**
+
+1. **f-строки** (Python 3.6+) — лучший способ
+2. **str.format()** — более старый
+3. **% форматирование** — самый старый
+
+**f-строки:**
+\`\`\`python
+f"Текст {выражение} текст"
+f"{value:.2f}"  # 2 знака после запятой
+f"{value:>10}"  # выравнивание
+f"{name!r}"     # repr()
+\`\`\``,
+        code: `# f-строки (рекомендуется)
+name = "Алиса"
+age = 25
+print(f"Меня зовут {name}, мне {age} лет")
+
+# Выражения внутри f-строк
+print(f"Через 5 лет: {age + 5}")
+print(f"Имя в верхнем регистре: {name.upper()}")
+
+# Форматирование чисел
+pi = 3.14159265
+print(f"Pi = {pi:.2f}")       # 3.14
+print(f"Pi = {pi:.4f}")       # 3.1416
+
+big_number = 1000000
+print(f"{big_number:,}")      # 1,000,000
+print(f"{big_number:_}")      # 1_000_000
+
+# Процент
+rate = 0.156
+print(f"{rate:.1%}")          # 15.6%
+
+# Выравнивание
+for i in range(1, 4):
+    print(f"|{i:>5}|{i*10:<10}|{i*100:^10}|")
+
+# Выравнивание строк
+for name in ["Алиса", "Борис", "В"]:
+    print(f"|{name:<10}|{len(name)}|")
+
+# str.format()
+print("Меня зовут {}, мне {} лет".format(name, age))
+print("{0} и {1}".format("первый", "второй"))
+print("{name}, {age}".format(name="Алиса", age=25))
+
+# % форматирование (старый стиль)
+print("Имя: %s, возраст: %d" % (name, age))
+print("Pi: %.2f" % 3.14159)
+
+# Многострочные f-строки
+item = "Python"
+price = 0
+print(f"""
+=== Товар ===
+Название: {item}
+Цена: {"Бесплатно" if price == 0 else f"{price} руб."}
+=============""")`,
+        exercise: {
+          question: 'Что выведет: print(f"{3.14159:.2f}")?',
+          options: ['3.14', '3.14159', '3.15', '3'],
+          correct: 0,
+          explanation: ':.2f форматирует число с плавающей точкой до 2 знаков после запятой: 3.14.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'files',
+    title: 'Работа с файлами',
+    icon: '📁',
+    description: 'Чтение и запись файлов',
+    lessons: [
+      {
+        id: 'file-1',
+        title: 'Чтение и запись файлов',
+        content: `**Открытие файла:**
+\`\`\`python
+with open("file.txt", "r") as f:
+    content = f.read()
+\`\`\`
+
+**Режимы открытия:**
+- \`r\` — чтение (по умолчанию)
+- \`w\` — запись (перезаписывает)
+- \`a\` — добавление в конец
+- \`x\` — создание (ошибка если существует)
+- \`b\` — бинарный режим
+- \`+\` — чтение и запись
+
+**Конструкция with:**
+Автоматически закрывает файл после выхода из блока.`,
+        code: `# Запись в файл
+with open("example.txt", "w", encoding="utf-8") as f:
+    f.write("Привет, мир!\\n")
+    f.write("Вторая строка\\n")
+    f.write("Третья строка\\n")
+
+# Чтение всего файла
+with open("example.txt", "r", encoding="utf-8") as f:
+    content = f.read()
+    print(content)
+
+# Чтение построчно
+with open("example.txt", "r", encoding="utf-8") as f:
+    for line in f:
+        print(line.strip())
+
+# Чтение в список строк
+with open("example.txt", "r", encoding="utf-8") as f:
+    lines = f.readlines()
+    print(lines)
+
+# Добавление в файл
+with open("example.txt", "a", encoding="utf-8") as f:
+    f.write("Новая строка\\n")
+
+# Запись списка строк
+lines = ["Строка 1\\n", "Строка 2\\n", "Строка 3\\n"]
+with open("output.txt", "w", encoding="utf-8") as f:
+    f.writelines(lines)
+
+# Работа с CSV (без библиотек)
+import csv
+
+# Запись CSV
+data = [
+    ["Имя", "Возраст", "Город"],
+    ["Алиса", "25", "Москва"],
+    ["Борис", "30", "СПб"]
+]
+with open("data.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerows(data)
+
+# Чтение CSV
+with open("data.csv", "r", encoding="utf-8") as f:
+    reader = csv.reader(f)
+    for row in reader:
+        print(row)
+
+# Проверка существования файла
+import os
+if os.path.exists("example.txt"):
+    print("Файл существует!")
+print(os.path.getsize("example.txt"))  # размер в байтах`,
+        exercise: {
+          question: 'Что делает конструкция "with open(...) as f"?',
+          options: [
+            'Открывает файл и не закрывает',
+            'Открывает файл и автоматически закрывает после выхода из блока',
+            'Создаёт копию файла',
+            'Шифрует файл'
+          ],
+          correct: 1,
+          explanation: 'Конструкция with (контекстный менеджер) автоматически закрывает файл после выхода из блока, даже если произошла ошибка.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'errors',
+    title: 'Обработка ошибок',
+    icon: '🛡️',
+    description: 'try/except — обработка исключений',
+    lessons: [
+      {
+        id: 'err-1',
+        title: 'try/except',
+        content: `**Исключения** — ошибки, возникающие во время выполнения программы.
+
+**Синтаксис:**
+\`\`\`python
+try:
+    # потенциально опасный код
+except ТипОшибки:
+    # обработка ошибки
+else:
+    # если ошибок не было
+finally:
+    # выполняется всегда
+\`\`\`
+
+**Частые исключения:**
+- \`ValueError\` — неверное значение
+- \`TypeError\` — неверный тип
+- \`IndexError\` — неверный индекс
+- \`KeyError\` — неверный ключ словаря
+- \`FileNotFoundError\` — файл не найден
+- \`ZeroDivisionError\` — деление на ноль`,
+        code: `# Базовый try/except
+try:
+    number = int(input("Введите число: "))
+    result = 10 / number
+    print(f"Результат: {result}")
+except ValueError:
+    print("Это не число!")
+except ZeroDivisionError:
+    print("На ноль делить нельзя!")
+
+# try/except/else/finally
+try:
+    f = open("file.txt", "r")
+    content = f.read()
+except FileNotFoundError:
+    print("Файл не найден!")
+else:
+    print(f"Файл прочитан: {len(content)} символов")
+    f.close()
+finally:
+    print("Блок выполнен в любом случае")
+
+# Несколько исключений
+try:
+    x = int("abc")
+except (ValueError, TypeError) as e:
+    print(f"Ошибка: {e}")
+
+# Все исключения (не рекомендуется)
+try:
+    dangerous_code()
+except Exception as e:
+    print(f"Произошла ошибка: {e}")
+
+# Создание своих исключений
+class InsufficientFundsError(Exception):
+    def __init__(self, balance, amount):
+        self.balance = balance
+        self.amount = amount
+        super().__init__(
+            f"Недостаточно средств. Баланс: {balance}, нужно: {amount}"
+        )
+
+def withdraw(balance, amount):
+    if amount > balance:
+        raise InsufficientFundsError(balance, amount)
+    return balance - amount
+
+try:
+    new_balance = withdraw(100, 150)
+except InsufficientFundsError as e:
+    print(e)  # Недостаточно средств. Баланс: 100, нужно: 150`,
+        exercise: {
+          question: 'Какой блок выполняется ВСЕГДА, независимо от наличия ошибок?',
+          options: ['try', 'except', 'else', 'finally'],
+          correct: 3,
+          explanation: 'Блок finally выполняется всегда — и при ошибке, и без неё. Используется для очистки ресурсов.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'oop',
+    title: 'Объектно-ориентированное программирование',
+    icon: '🏗️',
+    description: 'Классы, объекты, наследование',
+    lessons: [
+      {
+        id: 'oop-1',
+        title: 'Классы и объекты',
+        content: `**Класс** — шаблон для создания объектов.
+**Объект (экземпляр)** — конкретная реализация класса.
+
+**Основные понятия:**
+- \`__init__\` — конструктор (вызывается при создании)
+- \`self\` — ссылка на текущий объект
+- **Атрибуты** — данные объекта
+- **Методы** — функции объекта
+
+**Инкапсуляция:**
+- \`_атрибут\` — защищённый (условно)
+- \`__атрибут\` — приватный (name mangling)`,
+        code: `# Создание класса
+class Dog:
+    # Конструктор
+    def __init__(self, name, breed, age):
+        self.name = name      # атрибут
+        self.breed = breed
+        self.age = age
+
+    # Метод
+    def bark(self):
+        return f"{self.name} говорит: Гав!"
+
+    def info(self):
+        return f"{self.name}, порода: {self.breed}, возраст: {self.age}"
+
+# Создание объектов
+dog1 = Dog("Рекс", "Немецкая овчарка", 5)
+dog2 = Dog("Бобик", "Лабрадор", 3)
+
+print(dog1.bark())   # Рекс говорит: Гав!
+print(dog2.info())   # Бобик, порода: Лабрадор, возраст: 3
+
+# Класс с приватными атрибутами
+class BankAccount:
+    def __init__(self, owner, balance=0):
+        self.owner = owner
+        self.__balance = balance  # приватный
+
+    def deposit(self, amount):
+        if amount > 0:
+            self.__balance += amount
+            return True
+        return False
+
+    def withdraw(self, amount):
+        if amount <= self.__balance:
+            self.__balance -= amount
+            return True
+        return False
+
+    @property
+    def balance(self):
+        return self.__balance
+
+account = BankAccount("Алиса", 1000)
+account.deposit(500)
+print(account.balance)  # 1500 (через property)
+# print(account.__balance)  # Ошибка!`,
+        exercise: {
+          question: 'Что такое self в методах класса?',
+          options: [
+            'Глобальная переменная',
+            'Ссылка на текущий экземпляр класса',
+            'Имя класса',
+            'Ключевое слово Python'
+          ],
+          correct: 1,
+          explanation: 'self — это ссылка на текущий экземпляр класса. Через self происходит доступ к атрибутам и методам объекта.'
+        }
+      },
+      {
+        id: 'oop-2',
+        title: 'Наследование',
+        content: `**Наследование** позволяет создавать новые классы на основе существующих.
+
+**Синтаксис:**
+\`\`\`python
+class Child(Parent):
+    pass
+\`\`\`
+
+**Ключевые моменты:**
+- Дочерний класс наследует все методы и атрибуты родителя
+- \`super()\` — вызов методов родителя
+- **Полиморфизм** — разные реализации одного метода
+- \`isinstance()\` — проверка типа
+- \`__str__\`, \`__repr__\` — строковое представление`,
+        code: `# Базовый класс
+class Animal:
+    def __init__(self, name, sound):
+        self.name = name
+        self.sound = sound
+
+    def speak(self):
+        return f"{self.name}: {self.sound}!"
+
+    def info(self):
+        return f"Я {self.name}"
+
+# Наследование
+class Dog(Animal):
+    def __init__(self, name, breed):
+        super().__init__(name, "Гав")  # вызов конструктора родителя
+        self.breed = breed
+
+    def fetch(self):
+        return f"{self.name} принёс палку!"
+
+class Cat(Animal):
+    def __init__(self, name, color):
+        super().__init__(name, "Мяу")
+        self.color = color
+
+    def purr(self):
+        return f"{self.name} мурлыкает..."
+
+# Полиморфизм
+class Bird(Animal):
+    def __init__(self, name):
+        super().__init__(name, "Чирик")
+
+    def speak(self):  # переопределение метода
+        return f"{self.name} поёт песню!"
+
+# Создание объектов
+dog = Dog("Рекс", "Овчарка")
+cat = Cat("Мурка", "Чёрная")
+bird = Bird("Чижик")
+
+print(dog.speak())   # Рекс: Гав!
+print(cat.speak())   # Мурка: Мяу!
+print(bird.speak())  # Чижик поёт песню!
+
+# isinstance
+print(isinstance(dog, Dog))     # True
+print(isinstance(dog, Animal))  # True
+print(isinstance(dog, Cat))     # False
+
+# Множественное наследование
+class Flyable:
+    def fly(self):
+        return f"{self.name} летает!"
+
+class Swimming:
+    def swim(self):
+        return f"{self.name} плавает!"
+
+class Duck(Animal, Flyable, Swimming):
+    def __init__(self, name):
+        super().__init__(name, "Кря")
+
+duck = Duck("Дональд")
+print(duck.speak())  # Дональд: Кря!
+print(duck.fly())    # Дональд летает!
+print(duck.swim())   # Дональд плавает!
+
+# __str__ и __repr__
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return f"Point({self.x}, {self.y})"
+
+    def __repr__(self):
+        return f"Point({self.x}, {self.y})"
+
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
+
+p1 = Point(1, 2)
+p2 = Point(3, 4)
+print(p1)        # Point(1, 2)
+print(p1 + p2)   # Point(4, 6)`,
+        exercise: {
+          question: 'Что делает super() в дочернем классе?',
+          options: [
+            'Создаёт новый объект',
+            'Вызывает метод родительского класса',
+            'Удаляет родительский класс',
+            'Копирует все атрибуты'
+          ],
+          correct: 1,
+          explanation: 'super() возвращает временный объект родительского класса, позволяя вызывать его методы из дочернего класса.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'modules',
+    title: 'Модули и библиотеки',
+    icon: '📚',
+    description: 'Импорт модулей и работа с библиотеками',
+    lessons: [
+      {
+        id: 'mod-1',
+        title: 'Стандартная библиотека',
+        content: `Python имеет богатую стандартную библиотеку.
+
+**Импорт:**
+\`\`\`python
+import math                    # весь модуль
+from math import sqrt, pi      # конкретные функции
+from datetime import datetime as dt  # с псевдонимом
+\`\`\`
+
+**Полезные модули:**
+- \`math\` — математические функции
+- \`random\` — случайные числа
+- \`datetime\` — дата и время
+- \`os\` — работа с ОС
+- \`json\` — работа с JSON
+- \`re\` — регулярные выражения`,
+        code: `# math
+import math
+print(math.pi)          # 3.14159...
+print(math.sqrt(16))    # 4.0
+print(math.ceil(3.2))   # 4
+print(math.floor(3.8))  # 3
+
+# random
+import random
+print(random.randint(1, 10))     # случайное целое 1-10
+print(random.choice([1, 2, 3]))  # случайный элемент
+print(random.random())           # 0.0 до 1.0
+numbers = [1, 2, 3, 4, 5]
+random.shuffle(numbers)          # перемешать
+print(numbers)
+
+# datetime
+from datetime import datetime, timedelta
+now = datetime.now()
+print(now)
+print(now.strftime("%d.%m.%Y %H:%M"))
+tomorrow = now + timedelta(days=1)
+print(tomorrow)
+
+# json
+import json
+data = {"name": "Алиса", "age": 25}
+json_str = json.dumps(data, ensure_ascii=False, indent=2)
+print(json_str)
+
+# Парсинг JSON
+parsed = json.loads(json_str)
+print(parsed["name"])
+
+# os
+import os
+print(os.getcwd())           # текущая директория
+print(os.listdir("."))       # файлы в директории
+# os.makedirs("new_folder")  # создать папку
+
+# collections
+from collections import Counter
+words = ["яблоко", "банан", "яблоко", "вишня", "банан", "яблоко"]
+counter = Counter(words)
+print(counter)               # Counter({'яблоко': 3, 'банан': 2, 'вишня': 1})
+print(counter.most_common(2)) # [('яблоко', 3), ('банан', 2)]
+
+# itertools
+from itertools import combinations, permutations
+nums = [1, 2, 3]
+print(list(combinations(nums, 2)))  # [(1,2), (1,3), (2,3)]
+print(list(permutations(nums, 2)))  # [(1,2), (1,3), (2,1), (2,3), (3,1), (3,2)]`,
+        exercise: {
+          question: 'Как импортировать только функцию sqrt из модуля math?',
+          options: [
+            'import sqrt from math',
+            'from math import sqrt',
+            'import math.sqrt',
+            'use math.sqrt'
+          ],
+          correct: 1,
+          explanation: 'Правильный синтаксис: from math import sqrt. Это импортирует только функцию sqrt, без необходимости писать math.sqrt().'
+        }
+      }
+    ]
+  },
+  {
+    id: 'advanced',
+    title: 'Продвинутые темы',
+    icon: '🚀',
+    description: 'Декораторы, генераторы, контекстные менеджеры',
+    lessons: [
+      {
+        id: 'adv-1',
+        title: 'Генераторы и итераторы',
+        content: `**Генератор** — функция, которая возвращает последовательность значений лениво (по одному).
+
+**yield** — ключевое слово для генераторов.
+
+**Генераторные выражения:**
+\`\`\`python
+gen = (x**2 for x in range(10))
+\`\`\`
+
+**Преимущества:**
+- Экономия памяти (не хранит все значения сразу)
+- Бесконечные последовательности
+- Ленивые вычисления`,
+        code: `# Генератор с yield
+def countdown(n):
+    while n > 0:
+        yield n
+        n -= 1
+
+for num in countdown(5):
+    print(num)  # 5, 4, 3, 2, 1
+
+# Генератор vs список
+import sys
+
+# Список — занимает память для всех элементов
+big_list = [x**2 for x in range(10000)]
+print(f"Список: {sys.getsizeof(big_list)} байт")
+
+# Генератор — почти не занимает памяти
+big_gen = (x**2 for x in range(10000))
+print(f"Генератор: {sys.getsizeof(big_gen)} байт")
+
+# Бесконечный генератор
+def fibonacci():
+    a, b = 0, 1
+    while True:
+        yield a
+        a, b = b, a + b
+
+fib = fibonacci()
+for _ in range(10):
+    print(next(fib), end=" ")  # 0 1 1 2 3 5 8 13 21 34
+
+# Генератор с параметрами
+def range_gen(start, stop, step=1):
+    current = start
+    while current < stop:
+        yield current
+        current += step
+
+for i in range_gen(0, 10, 2):
+    print(i, end=" ")  # 0 2 4 6 8
+
+# Генераторные выражения
+squares_gen = (x**2 for x in range(100))
+print(sum(squares_gen))  # сумма квадратов
+
+# next() и StopIteration
+gen = (x for x in range(3))
+print(next(gen))  # 0
+print(next(gen))  # 1
+print(next(gen))  # 2
+# print(next(gen))  # StopIteration!
+
+# Генератор для чтения больших файлов
+def read_large_file(file_path):
+    with open(file_path, 'r') as f:
+        for line in f:
+            yield line.strip()
+
+# Использование
+# for line in read_large_file("huge_file.txt"):
+#     process(line)`,
+        exercise: {
+          question: 'Какое ключевое слово используется в генераторах?',
+          options: ['return', 'yield', 'generate', 'next'],
+          correct: 1,
+          explanation: 'yield — ключевое слово для генераторов. Оно возвращает значение и приостанавливает выполнение функции, сохраняя её состояние.'
+        }
+      },
+      {
+        id: 'adv-2',
+        title: 'Декораторы',
+        content: `**Декоратор** — функция, которая модифицирует поведение другой функции.
+
+**Синтаксис:**
+\`\`\`python
+@decorator
+def function():
+    pass
+\`\`\`
+
+эквивалентно:
+
+\`\`\`python
+function = decorator(function)
+\`\`\`
+
+**Применение:**
+- Логирование
+- Измерение времени
+- Кэширование
+- Проверка прав доступа`,
+        code: `# Простой декоратор
+def timer(func):
+    import time
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} выполнилась за {end-start:.4f} сек")
+        return result
+    return wrapper
+
+@timer
+def slow_function():
+    import time
+    time.sleep(1)
+    return "Готово!"
+
+print(slow_function())
+# slow_function выполнилась за 1.0012 сек
+# Готово!
+
+# Декоратор с аргументами
+def repeat(n):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for _ in range(n):
+                result = func(*args, **kwargs)
+            return result
+        return wrapper
+    return decorator
+
+@repeat(3)
+def greet(name):
+    print(f"Привет, {name}!")
+
+greet("Мир")
+# Привет, Мир!
+# Привет, Мир!
+# Привет, Мир!
+
+# Декоратор для логирования
+def logger(func):
+    def wrapper(*args, **kwargs):
+        print(f"Вызов {func.__name__}({args}, {kwargs})")
+        result = func(*args, **kwargs)
+        print(f"Результат: {result}")
+        return result
+    return wrapper
+
+@logger
+def add(a, b):
+    return a + b
+
+add(3, 5)
+# Вызов add((3, 5), {})
+# Результат: 8
+
+# Декоратор кэширования (memoization)
+def memoize(func):
+    cache = {}
+    def wrapper(*args):
+        if args not in cache:
+            cache[args] = func(*args)
+        return cache[args]
+    return wrapper
+
+@memoize
+def fibonacci(n):
+    if n < 2:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+
+print(fibonacci(100))  # мгновенно!
+
+# functools.wraps для сохранения метаданных
+from functools import wraps
+
+def my_decorator(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        """Обёртка"""
+        return func(*args, **kwargs)
+    return wrapper
+
+@my_decorator
+def hello():
+    """Приветствие"""
+    print("Hello!")
+
+print(hello.__name__)  # hello (а не wrapper)
+print(hello.__doc__)   # Приветствие`,
+        exercise: {
+          question: 'Что делает декоратор @timer?',
+          options: [
+            'Ускоряет функцию',
+            'Измеряет время выполнения функции',
+            'Запускает функцию в отдельном потоке',
+            'Повторяет вызов функции'
+          ],
+          correct: 1,
+          explanation: 'Декоратор @timer оборачивает функцию и измеряет время её выполнения, выводя результат на экран.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'project',
+    title: 'Финальный проект',
+    icon: '🎓',
+    description: 'Создание полноценного проекта на Python',
+    lessons: [
+      {
+        id: 'proj-1',
+        title: 'Менеджер задач (To-Do)',
+        content: `**Финальный проект: Менеджер задач**
+
+Давайте создадим полноценное консольное приложение для управления задачами!
+
+**Функционал:**
+- ✅ Добавление задач
+- ✅ Просмотр списка задач
+- ✅ Отметка задач как выполненных
+- ✅ Удаление задач
+- ✅ Сохранение в файл
+- ✅ Фильтрация по статусу
+
+**Используемые концепции:**
+- Классы и ООП
+- Работа с файлами (JSON)
+- Обработка ошибок
+- Функции
+- Циклы и условия`,
+        code: `import json
+import os
+from datetime import datetime
+
+class Task:
+    def __init__(self, title, description="", priority="средний"):
+        self.id = None
+        self.title = title
+        self.description = description
+        self.priority = priority
+        self.completed = False
+        self.created_at = datetime.now().isoformat()
+        self.completed_at = None
+
+    def complete(self):
+        self.completed = True
+        self.completed_at = datetime.now().isoformat()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "priority": self.priority,
+            "completed": self.completed,
+            "created_at": self.created_at,
+            "completed_at": self.completed_at
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        task = cls(data["title"], data["description"], data["priority"])
+        task.id = data["id"]
+        task.completed = data["completed"]
+        task.created_at = data["created_at"]
+        task.completed_at = data.get("completed_at")
+        return task
+
+    def __str__(self):
+        status = "✅" if self.completed else "⬜"
+        return f"{status} [{self.id}] {self.title} ({self.priority})"
+
+class TaskManager:
+    def __init__(self, filename="tasks.json"):
+        self.filename = filename
+        self.tasks = []
+        self.load()
+
+    def load(self):
+        if os.path.exists(self.filename):
+            try:
+                with open(self.filename, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    self.tasks = [Task.from_dict(t) for t in data]
+            except (json.JSONDecodeError, IOError):
+                self.tasks = []
+
+    def save(self):
+        with open(self.filename, "w", encoding="utf-8") as f:
+            json.dump([t.to_dict() for t in self.tasks], f,
+                     ensure_ascii=False, indent=2)
+
+    def add(self, title, description="", priority="средний"):
+        task = Task(title, description, priority)
+        task.id = len(self.tasks) + 1
+        self.tasks.append(task)
+        self.save()
+        print(f"Задача добавлена: {task}")
+
+    def complete(self, task_id):
+        for task in self.tasks:
+            if task.id == task_id:
+                task.complete()
+                self.save()
+                print(f"Задача выполнена: {task}")
+                return
+        print("Задача не найдена!")
+
+    def delete(self, task_id):
+        self.tasks = [t for t in self.tasks if t.id != task_id]
+        self.save()
+        print("Задача удалена!")
+
+    def show_all(self):
+        if not self.tasks:
+            print("Список задач пуст!")
+            return
+        print("\\n=== Список задач ===")
+        for task in self.tasks:
+            print(task)
+
+    def show_completed(self):
+        completed = [t for t in self.tasks if t.completed]
+        print(f"\\nВыполнено: {len(completed)}/{len(self.tasks)}")
+        for task in completed:
+            print(task)
+
+# Использование
+manager = TaskManager()
+manager.add("Изучить Python", "Пройти курс PyCamp", "высокий")
+manager.add("Написать проект", "Менеджер задач", "высокий")
+manager.add("Отдохнуть", "Погулять в парке", "низкий")
+manager.complete(1)
+manager.show_all()
+manager.show_completed()`,
+        exercise: {
+          question: 'Какой метод класса используется для создания объекта из словаря?',
+          options: ['__init__', '@staticmethod', '@classmethod', '__new__'],
+          correct: 2,
+          explanation: '@classmethod (как from_dict) используется для создания альтернативных конструкторов. Он получает cls вместо self и может создавать экземпляры класса.'
+        }
+      },
+      {
+        id: 'proj-2',
+        title: 'Поздравляем! 🎉',
+        content: `## 🎓 Вы прошли полный курс Python!
+
+**Что вы изучили:**
+- ✅ Основы синтаксиса Python
+- ✅ Переменные и типы данных
+- ✅ Операторы и выражения
+- ✅ Условные конструкции
+- ✅ Циклы for и while
+- ✅ Функции и lambda
+- ✅ Списки, кортежи, словари, множества
+- ✅ Строки и форматирование
+- ✅ Работа с файлами
+- ✅ Обработка ошибок
+- ✅ ООП (классы, наследование)
+- ✅ Модули и стандартная библиотека
+- ✅ Генераторы и декораторы
+- ✅ Финальный проект
+
+**Куда двигаться дальше:**
+- 🌐 **Веб-разработка:** Django, Flask, FastAPI
+- 📊 **Анализ данных:** Pandas, NumPy, Matplotlib
+- 🤖 **Machine Learning:** scikit-learn, TensorFlow, PyTorch
+- 🔧 **Автоматизация:** Selenium, requests, BeautifulSoup
+- 🎮 **Игры:** Pygame, Ursina
+- 📱 **Приложения:** Kivy, Tkinter
+
+**Ресурсы для практики:**
+- Codewars, LeetCode — задачи
+- GitHub — открытые проекты
+- Документация docs.python.org
+- Сообщество: Stack Overflow, Reddit r/learnpython
+
+**Удачи в вашем пути Python-разработчика! 🐍**`,
+        code: `# Ваш путь только начинается!
+# Вот пример того, что вы можете создать:
+
+class PythonDeveloper:
+    def __init__(self, name):
+        self.name = name
+        self.skills = [
+            "Синтаксис Python",
+            "Переменные и типы",
+            "Условия и циклы",
+            "Функции",
+            "Структуры данных",
+            "ООП",
+            "Работа с файлами",
+            "Обработка ошибок",
+            "Модули",
+            "Декораторы и генераторы"
+        ]
+        self.projects_completed = 1
+
+    def introduce(self):
+        print(f"👋 Привет! Я {self.name}")
+        print(f"📚 Изученных тем: {len(self.skills)}")
+        print(f"🎯 Проектов: {self.projects_completed}")
+        print("🚀 Готов к новым вызовам!")
+
+    def keep_learning(self):
+        paths = [
+            "Django/Flask — веб-разработка",
+            "Pandas/NumPy — анализ данных",
+            "TensorFlow/PyTorch — ML",
+            "FastAPI — API",
+        ]
+        print("\\nСледующие шаги:")
+        for i, path in enumerate(paths, 1):
+            print(f"  {i}. {path}")
+
+# Создайте себя!
+developer = PythonDeveloper("Ваше Имя")
+developer.introduce()
+developer.keep_learning()
+
+print("\\n🎓 Поздравляем с окончанием курса!")
+print("🐍 Вы теперь Python-разработчик!")`,
+        exercise: {
+          question: 'Какой фреймворк Python используется для веб-разработки?',
+          options: ['Pandas', 'Django', 'NumPy', 'TensorFlow'],
+          correct: 1,
+          explanation: 'Django — популярный веб-фреймворк для Python. Также существуют Flask и FastAPI. Pandas и NumPy — для анализа данных, TensorFlow — для ML.'
+        }
+      }
+    ]
+  }
+];
+
+// ==================== COMPONENTS ====================
+
+function CodeBlock({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="relative group my-4">
+      <div className="absolute top-2 right-2 z-10">
+        <button
+          onClick={handleCopy}
+          className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors"
+        >
+          {copied ? '✓ Скопировано' : '📋 Копировать'}
+        </button>
+      </div>
+      <pre className="bg-gray-900 text-green-400 p-4 pt-10 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
+}
+
+function ContentRenderer({ content }: { content: string }) {
+  const lines = content.split('\n');
+  const elements: JSX.Element[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (line.startsWith('```')) {
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith('```')) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      elements.push(<CodeBlock key={i} code={codeLines.join('\n')} />);
+    } else if (line.startsWith('## ')) {
+      elements.push(<h2 key={i} className="text-2xl font-bold text-white mt-6 mb-3">{line.slice(3)}</h2>);
+    } else if (line.startsWith('### ')) {
+      elements.push(<h3 key={i} className="text-xl font-bold text-gray-200 mt-4 mb-2">{line.slice(4)}</h3>);
+    } else if (line.startsWith('**') && line.endsWith('**')) {
+      elements.push(<h4 key={i} className="text-lg font-bold text-emerald-400 mt-4 mb-2">{line.slice(2, -2)}</h4>);
+    } else if (line.startsWith('- ')) {
+      elements.push(
+        <li key={i} className="text-gray-300 ml-4 mb-1 list-disc list-inside">
+          {renderInlineMarkdown(line.slice(2))}
+        </li>
+      );
+    } else if (line.startsWith('| ')) {
+      // Table row - collect all table lines
+      const tableLines: string[] = [];
+      while (i < lines.length && lines[i].startsWith('|')) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+      elements.push(<TableComponent key={i} lines={tableLines} />);
+      continue;
+    } else if (line.trim() === '') {
+      elements.push(<div key={i} className="h-2" />);
+    } else {
+      elements.push(
+        <p key={i} className="text-gray-300 leading-relaxed mb-2">
+          {renderInlineMarkdown(line)}
+        </p>
+      );
+    }
+    i++;
+  }
+
+  return <div>{elements}</div>;
+}
+
+function TableComponent({ lines }: { lines: string[] }) {
+  if (lines.length < 2) return null;
+
+  const parseRow = (line: string) =>
+    line.split('|').filter(cell => cell.trim() !== '').map(cell => cell.trim());
+
+  const headers = parseRow(lines[0]);
+  const rows = lines.slice(2).map(parseRow); // skip separator line
+
+  return (
+    <div className="overflow-x-auto my-4">
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="bg-gray-800">
+            {headers.map((h, i) => (
+              <th key={i} className="border border-gray-700 px-4 py-2 text-left text-emerald-400 font-semibold">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, ri) => (
+            <tr key={ri} className="hover:bg-gray-800/50">
+              {row.map((cell, ci) => (
+                <td key={ci} className="border border-gray-700 px-4 py-2 text-gray-300">
+                  {renderInlineMarkdown(cell)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function renderInlineMarkdown(text: string): (string | JSX.Element)[] {
+  const parts: (string | JSX.Element)[] = [];
+  const regex = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g;
+  let lastIndex = 0;
+  let match;
+  let key = 0;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    const m = match[0];
+    if (m.startsWith('`')) {
+      parts.push(
+        <code key={key++} className="bg-gray-800 text-yellow-300 px-1.5 py-0.5 rounded text-sm font-mono">
+          {m.slice(1, -1)}
+        </code>
+      );
+    } else if (m.startsWith('**')) {
+      parts.push(
+        <strong key={key++} className="text-white font-semibold">
+          {m.slice(2, -2)}
+        </strong>
+      );
+    } else if (m.startsWith('*')) {
+      parts.push(
+        <em key={key++} className="italic text-gray-200">
+          {m.slice(1, -1)}
+        </em>
+      );
+    }
+    lastIndex = match.index + m.length;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts.length > 0 ? parts : [text];
+}
+
+function Exercise({ exercise, onComplete }: { exercise: NonNullable<Lesson['exercise']>; onComplete: () => void }) {
+  const [selected, setSelected] = useState<number | null>(null);
+  const [showResult, setShowResult] = useState(false);
+
+  const handleCheck = () => {
+    setShowResult(true);
+    if (selected === exercise.correct) {
+      setTimeout(onComplete, 1500);
+    }
+  };
+
+  const handleRetry = () => {
+    setSelected(null);
+    setShowResult(false);
+  };
+
+  return (
+    <div className="mt-8 p-6 bg-gray-800/50 rounded-xl border border-gray-700">
+      <h3 className="text-xl font-bold text-yellow-400 mb-4 flex items-center gap-2">
+        <span>🧪</span> Упражнение
+      </h3>
+      <p className="text-white text-lg mb-4">{exercise.question}</p>
+      <div className="space-y-2">
+        {exercise.options.map((option, idx) => (
+          <button
+            key={idx}
+            onClick={() => !showResult && setSelected(idx)}
+            className={`w-full text-left p-3 rounded-lg border transition-all ${
+              showResult
+                ? idx === exercise.correct
+                  ? 'bg-green-900/50 border-green-500 text-green-300'
+                  : idx === selected
+                  ? 'bg-red-900/50 border-red-500 text-red-300'
+                  : 'bg-gray-800 border-gray-700 text-gray-400'
+                : selected === idx
+                ? 'bg-blue-900/50 border-blue-500 text-blue-300'
+                : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-500'
+            }`}
+          >
+            <span className="font-mono mr-2">{String.fromCharCode(65 + idx)}.</span>
+            {option}
+          </button>
+        ))}
+      </div>
+      {!showResult ? (
+        <button
+          onClick={handleCheck}
+          disabled={selected === null}
+          className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-lg transition-colors font-semibold"
+        >
+          Проверить ответ
+        </button>
+      ) : (
+        <div className={`mt-4 p-4 rounded-lg ${selected === exercise.correct ? 'bg-green-900/30 border border-green-700' : 'bg-red-900/30 border border-red-700'}`}>
+          <p className={`font-bold mb-1 ${selected === exercise.correct ? 'text-green-400' : 'text-red-400'}`}>
+            {selected === exercise.correct ? '✅ Правильно!' : '❌ Неправильно'}
+          </p>
+          <p className="text-gray-300 text-sm">{exercise.explanation}</p>
+          {selected !== exercise.correct && (
+            <button
+              onClick={handleRetry}
+              className="mt-3 px-4 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors"
+            >
+              Попробовать снова
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ==================== MAIN APP ====================
+
+export default function App() {
+  const [currentModule, setCurrentModule] = useState<string | null>(null);
+  const [currentLesson, setCurrentLesson] = useState<number>(0);
+  const [completedLessons, setCompletedLessons] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem('pycamp-completed');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('pycamp-completed', JSON.stringify([...completedLessons]));
+  }, [completedLessons]);
+
+  const totalLessons = courseData.reduce((acc, m) => acc + m.lessons.length, 0);
+  const progress = Math.round((completedLessons.size / totalLessons) * 100);
+
+  const markComplete = useCallback((lessonId: string) => {
+    setCompletedLessons(prev => {
+      const next = new Set(prev);
+      next.add(lessonId);
+      return next;
+    });
+  }, []);
+
+  const getCurrentModule = () => courseData.find(m => m.id === currentModule);
+  const getCurrentLesson = () => getCurrentModule()?.lessons[currentLesson];
+
+  const goToLesson = (moduleId: string, lessonIndex: number) => {
+    setCurrentModule(moduleId);
+    setCurrentLesson(lessonIndex);
+    setSidebarOpen(false);
+    window.scrollTo(0, 0);
+  };
+
+  const goToNextLesson = () => {
+    const mod = getCurrentModule();
+    if (!mod) return;
+    if (currentLesson < mod.lessons.length - 1) {
+      setCurrentLesson(currentLesson + 1);
+    } else {
+      const modIndex = courseData.findIndex(m => m.id === mod.id);
+      if (modIndex < courseData.length - 1) {
+        setCurrentModule(courseData[modIndex + 1].id);
+        setCurrentLesson(0);
+      }
+    }
+    window.scrollTo(0, 0);
+  };
+
+  const goToPrevLesson = () => {
+    if (currentLesson > 0) {
+      setCurrentLesson(currentLesson - 1);
+    } else {
+      const modIndex = courseData.findIndex(m => m.id === currentModule);
+      if (modIndex > 0) {
+        const prevMod = courseData[modIndex - 1];
+        setCurrentModule(prevMod.id);
+        setCurrentLesson(prevMod.lessons.length - 1);
+      }
+    }
+    window.scrollTo(0, 0);
+  };
+
+  // HOME PAGE
+  if (!currentModule) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white">
+        {/* Header */}
+        <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">🐍</span>
+              <div>
+                <h1 className="text-xl font-bold text-white">PyCamp</h1>
+                <p className="text-xs text-gray-400">Бесплатный курс Python</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex items-center gap-2">
+                <div className="w-32 h-2 bg-gray-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <span className="text-sm text-gray-400">{progress}%</span>
+              </div>
+              <button
+                onClick={() => setCompletedLessons(new Set())}
+                className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                title="Сбросить прогресс"
+              >
+                Сброс
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Hero */}
+        <section className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-gray-950 to-blue-900/20" />
+          <div className="relative max-w-7xl mx-auto px-4 py-16 sm:py-24 text-center">
+            <div className="text-6xl mb-6">🐍</div>
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
+              Изучите Python бесплатно
+            </h2>
+            <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+              Полный интерактивный курс от основ до продвинутых тем.
+              Уроки, примеры кода, упражнения и проекты.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4 mb-12">
+              <div className="bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2">
+                <span className="text-2xl font-bold text-emerald-400">{courseData.length}</span>
+                <span className="text-gray-400 ml-2">модулей</span>
+              </div>
+              <div className="bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2">
+                <span className="text-2xl font-bold text-blue-400">{totalLessons}</span>
+                <span className="text-gray-400 ml-2">уроков</span>
+              </div>
+              <div className="bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2">
+                <span className="text-2xl font-bold text-yellow-400">{totalLessons}</span>
+                <span className="text-gray-400 ml-2">упражнений</span>
+              </div>
+            </div>
+            {progress > 0 && (
+              <p className="text-gray-400 mb-6">
+                Прогресс: <span className="text-emerald-400 font-bold">{completedLessons.size}/{totalLessons}</span> уроков завершено
+              </p>
+            )}
+            <button
+              onClick={() => {
+                if (completedLessons.size > 0) {
+                  // Find first incomplete lesson
+                  for (const mod of courseData) {
+                    for (let i = 0; i < mod.lessons.length; i++) {
+                      if (!completedLessons.has(mod.lessons[i].id)) {
+                        goToLesson(mod.id, i);
+                        return;
+                      }
+                    }
+                  }
+                }
+                goToLesson(courseData[0].id, 0);
+              }}
+              className="px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-lg transition-colors shadow-lg shadow-emerald-900/30"
+            >
+              {completedLessons.size > 0 ? '▶ Продолжить обучение' : '🚀 Начать курс'}
+            </button>
+          </div>
+        </section>
+
+        {/* Modules Grid */}
+        <section className="max-w-7xl mx-auto px-4 py-12">
+          <h3 className="text-2xl font-bold text-white mb-8 text-center">📚 Программа курса</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {courseData.map((mod, modIndex) => {
+              const completedInModule = mod.lessons.filter(l => completedLessons.has(l.id)).length;
+              const moduleComplete = completedInModule === mod.lessons.length;
+              return (
+                <button
+                  key={mod.id}
+                  onClick={() => goToLesson(mod.id, 0)}
+                  className={`text-left p-5 rounded-xl border transition-all hover:scale-[1.02] hover:shadow-lg ${
+                    moduleComplete
+                      ? 'bg-emerald-900/20 border-emerald-700 hover:border-emerald-500'
+                      : completedInModule > 0
+                      ? 'bg-blue-900/20 border-blue-700 hover:border-blue-500'
+                      : 'bg-gray-900 border-gray-800 hover:border-gray-600'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <span className="text-3xl">{mod.icon}</span>
+                    <span className="text-xs text-gray-500">#{modIndex + 1}</span>
+                  </div>
+                  <h4 className="font-bold text-white mb-1">{mod.title}</h4>
+                  <p className="text-sm text-gray-400 mb-3">{mod.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">{mod.lessons.length} уроков</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${moduleComplete ? 'bg-emerald-500' : 'bg-blue-500'}`}
+                          style={{ width: `${(completedInModule / mod.lessons.length) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-500">{completedInModule}/{mod.lessons.length}</span>
+                    </div>
+                  </div>
+                  {moduleComplete && <span className="text-xs text-emerald-400 mt-1">✓ Завершено</span>}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Certificate */}
+        {progress === 100 && (
+          <section className="max-w-2xl mx-auto px-4 py-12">
+            <div className="bg-gradient-to-br from-yellow-900/30 to-amber-900/30 border-2 border-yellow-600 rounded-2xl p-8 text-center">
+              <div className="text-5xl mb-4">🏆</div>
+              <h3 className="text-2xl font-bold text-yellow-400 mb-2">Сертификат получен!</h3>
+              <p className="text-gray-300 mb-4">Вы успешно завершили полный курс Python на PyCamp</p>
+              <div className="bg-gray-900/50 rounded-lg p-4 border border-yellow-800">
+                <p className="text-yellow-300 font-mono text-sm">
+                  СЕРТИФИКАТ #PYCAMP-{Date.now().toString(36).toUpperCase()}
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Footer */}
+        <footer className="border-t border-gray-800 mt-12">
+          <div className="max-w-7xl mx-auto px-4 py-8 text-center text-gray-500 text-sm">
+            <p>PyCamp — Бесплатная платформа для изучения Python</p>
+            <p className="mt-1">Создано с ❤️ для начинающих разработчиков</p>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
+  // LESSON PAGE
+  const mod = getCurrentModule();
+  const lesson = getCurrentLesson();
+  if (!mod || !lesson) return null;
+
+  const isCompleted = completedLessons.has(lesson.id);
+  const modIndex = courseData.findIndex(m => m.id === mod.id);
+  const isFirst = modIndex === 0 && currentLesson === 0;
+  const isLast = modIndex === courseData.length - 1 && currentLesson === mod.lessons.length - 1;
+
+  return (
+    <div className="min-h-screen bg-gray-950 text-white flex">
+      {/* Mobile menu button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-gray-800 rounded-lg border border-gray-700"
+      >
+        <span className="text-xl">{sidebarOpen ? '✕' : '☰'}</span>
+      </button>
+
+      {/* Sidebar */}
+      <aside className={`fixed lg:sticky top-0 left-0 h-screen w-72 bg-gray-900 border-r border-gray-800 overflow-y-auto z-40 transition-transform ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
+        <div className="p-4 border-b border-gray-800">
+          <button onClick={() => setCurrentModule(null)} className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors">
+            <span>🐍</span>
+            <span className="font-bold">PyCamp</span>
+          </button>
+          <div className="mt-3">
+            <div className="flex justify-between text-xs text-gray-400 mb-1">
+              <span>Прогресс</span>
+              <span>{progress}%</span>
+            </div>
+            <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+              <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
+            </div>
+          </div>
+        </div>
+        <nav className="p-2">
+          {courseData.map((m, mi) => (
+            <div key={m.id} className="mb-1">
+              <div className={`px-3 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 ${
+                m.id === currentModule ? 'bg-gray-800 text-white' : 'text-gray-400'
+              }`}>
+                <span>{m.icon}</span>
+                <span className="truncate">{m.title}</span>
+                <span className="ml-auto text-xs text-gray-600">#{mi + 1}</span>
+              </div>
+              {m.id === currentModule && (
+                <div className="ml-4 mt-1 space-y-0.5">
+                  {m.lessons.map((l, li) => {
+                    const lCompleted = completedLessons.has(l.id);
+                    const lActive = li === currentLesson;
+                    return (
+                      <button
+                        key={l.id}
+                        onClick={() => goToLesson(m.id, li)}
+                        className={`w-full text-left px-3 py-1.5 rounded text-xs transition-colors flex items-center gap-2 ${
+                          lActive
+                            ? 'bg-emerald-900/50 text-emerald-300 border border-emerald-700'
+                            : lCompleted
+                            ? 'text-emerald-500 hover:bg-gray-800'
+                            : 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'
+                        }`}
+                      >
+                        <span>{lCompleted ? '✓' : '○'}</span>
+                        <span className="truncate">{l.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+        </nav>
+      </aside>
+
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      {/* Main Content */}
+      <main className="flex-1 min-w-0">
+        {/* Top bar */}
+        <div className="sticky top-0 bg-gray-900/95 backdrop-blur border-b border-gray-800 px-4 sm:px-8 py-3 z-20">
+          <div className="flex items-center justify-between ml-10 lg:ml-0">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-500">{mod.icon} {mod.title}</span>
+              <span className="text-gray-700">/</span>
+              <span className="text-gray-300">{lesson.title}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {isCompleted && <span className="text-xs text-emerald-400 bg-emerald-900/30 px-2 py-1 rounded">✓ Завершено</span>}
+              <span className="text-xs text-gray-500">
+                {currentLesson + 1}/{mod.lessons.length}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Lesson content */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-8 py-8">
+          <h1 className="text-3xl font-bold text-white mb-6">{lesson.title}</h1>
+
+          <ContentRenderer content={lesson.content} />
+
+          {lesson.code && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                <span>💻</span> Пример кода
+              </h3>
+              <CodeBlock code={lesson.code} />
+            </div>
+          )}
+
+          {lesson.exercise && (
+            <Exercise
+              exercise={lesson.exercise}
+              onComplete={() => markComplete(lesson.id)}
+            />
+          )}
+
+          {!lesson.exercise && !isCompleted && (
+            <div className="mt-8">
+              <button
+                onClick={() => markComplete(lesson.id)}
+                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors"
+              >
+                ✓ Отметить как завершённое
+              </button>
+            </div>
+          )}
+
+          {isCompleted && !lesson.exercise && (
+            <div className="mt-8 p-4 bg-emerald-900/20 border border-emerald-800 rounded-lg">
+              <p className="text-emerald-400 font-semibold">✓ Урок завершён!</p>
+            </div>
+          )}
+
+          {/* Navigation */}
+          <div className="mt-12 pt-6 border-t border-gray-800 flex justify-between">
+            <button
+              onClick={goToPrevLesson}
+              disabled={isFirst}
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-30 disabled:hover:bg-gray-800 text-white rounded-lg transition-colors text-sm"
+            >
+              ← Назад
+            </button>
+            <button
+              onClick={() => setCurrentModule(null)}
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-400 rounded-lg transition-colors text-sm"
+            >
+              📚 К модулям
+            </button>
+            <button
+              onClick={goToNextLesson}
+              disabled={isLast}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-30 disabled:hover:bg-emerald-600 text-white rounded-lg transition-colors text-sm font-semibold"
+            >
+              Далее →
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
