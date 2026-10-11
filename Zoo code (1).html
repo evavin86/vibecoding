@@ -1,0 +1,2343 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PyCamp — бесплатный курс по Python</title>
+<style>
+:root{
+  --bg:#1b1b32;
+  --bg-2:#232345;
+  --bg-3:#2a2a55;
+  --panel:#0f172a;
+  --border:#3a3a6a;
+  --text:#f5f6f7;
+  --muted:#a8a8c8;
+  --accent:#f1be32;
+  --accent-2:#ffcf40;
+  --green:#2ecc71;
+  --green-dark:#00471b;
+  --blue:#1d6fb8;
+  --red:#e74c3c;
+  --purple:#9b59b6;
+  --code-bg:#0d1120;
+  --radius:10px;
+  --mono:"Fira Code","JetBrains Mono",Consolas,"Courier New",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  font-size:15px;line-height:1.6;overflow:hidden;
+}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:8px;font-size:14px;transition:.15s}
+button:active{transform:translateY(1px)}
+
+/* ---------- Topbar ---------- */
+.topbar{
+  height:56px;display:flex;align-items:center;gap:16px;padding:0 18px;
+  background:var(--bg-2);border-bottom:1px solid var(--border);position:relative;z-index:40;
+}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:19px;white-space:nowrap}
+.brand .logo{font-size:22px}
+.brand span{color:var(--accent)}
+.brand small{color:var(--muted);font-weight:400;font-size:12px;margin-left:6px}
+.progress-wrap{display:flex;align-items:center;gap:10px;margin-left:auto;min-width:180px}
+.progress-bar{flex:1;height:12px;background:var(--bg);border-radius:20px;overflow:hidden;border:1px solid var(--border)}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),#7bed9f);border-radius:20px;transition:width .4s}
+.progress-text{font-size:13px;color:var(--muted);min-width:70px;text-align:right}
+.menu-btn{display:none;background:var(--bg-3);color:var(--text);padding:6px 12px;font-size:18px}
+.tb-btn{background:var(--bg-3);color:var(--text);padding:7px 12px;font-size:13px}
+.tb-btn:hover{background:var(--border)}
+
+/* ---------- Layout ---------- */
+.layout{display:flex;height:calc(100vh - 56px)}
+.sidebar{
+  width:320px;flex-shrink:0;background:var(--bg-2);border-right:1px solid var(--border);
+  overflow-y:auto;padding-bottom:40px;
+}
+.sidebar-head{padding:16px;font-weight:700;border-bottom:1px solid var(--border);color:var(--accent);letter-spacing:.5px}
+.module{border-bottom:1px solid rgba(58,58,106,.5)}
+.module-head{
+  display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;user-select:none;font-weight:600;
+}
+.module-head:hover{background:var(--bg-3)}
+.module-head .chev{margin-left:auto;color:var(--muted);transition:transform .2s;font-size:12px}
+.module.open .chev{transform:rotate(90deg)}
+.module-icon{font-size:17px}
+.module-count{margin-left:auto;font-size:11px;color:var(--muted);background:var(--bg);padding:2px 8px;border-radius:20px}
+.module.open .module-count{display:none}
+.lessons{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.module.open .lessons{max-height:1200px}
+.lesson-link{
+  display:flex;align-items:center;gap:10px;padding:9px 16px 9px 40px;cursor:pointer;font-size:13.5px;color:var(--muted);
+  border-left:3px solid transparent;
+}
+.lesson-link:hover{background:var(--bg-3);color:var(--text)}
+.lesson-link.active{background:var(--bg-3);color:var(--text);border-left-color:var(--accent)}
+.lesson-link .check{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px}
+.lesson-link.done .check{background:var(--green);border-color:var(--green);color:#03210f}
+.lesson-link.done{color:#8fdcae}
+
+/* ---------- Main ---------- */
+.main{flex:1;overflow-y:auto;background:var(--bg)}
+.lesson-head{padding:22px 28px 10px}
+.lesson-crumbs{font-size:12px;color:var(--muted);margin-bottom:6px}
+.lesson-title{font-size:26px;font-weight:700}
+.lesson-title .badge{font-size:11px;background:var(--purple);color:#fff;padding:2px 10px;border-radius:20px;vertical-align:middle;margin-left:10px}
+.workspace{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:16px 28px 60px;align-items:start}
+@media(max-width:1100px){.workspace{grid-template-columns:1fr}}
+
+.card{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.card-head{padding:10px 16px;background:var(--bg-3);font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card-body{padding:16px}
+
+/* Theory */
+.theory{font-size:15px}
+.theory p{margin:0 0 12px}
+.theory h3{margin:18px 0 8px;color:var(--accent);font-size:17px}
+.theory ul,.theory ol{margin:0 0 12px 22px}
+.theory li{margin-bottom:6px}
+.theory code{background:var(--code-bg);padding:2px 6px;border-radius:5px;font-family:var(--mono);font-size:13.5px;color:#ffd479}
+.theory pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;overflow-x:auto;margin:0 0 14px;font-family:var(--mono);font-size:13.5px;line-height:1.55}
+.theory pre code{background:none;padding:0;color:#e6edf3}
+.theory .tip{background:rgba(46,204,113,.1);border-left:3px solid var(--green);padding:10px 14px;border-radius:6px;margin:0 0 14px;font-size:14px}
+.theory .warn{background:rgba(241,190,50,.1);border-left:3px solid var(--accent);padding:10px 14px;border-radius:6px;margin:0 0 14px;font-size:14px}
+.task-title{color:var(--green);font-weight:700;margin:18px 0 8px;display:flex;align-items:center;gap:8px}
+
+/* Editor */
+.editor-wrap{position:relative;background:var(--code-bg);display:flex;height:290px;font-family:var(--mono);font-size:13.5px;line-height:1.55}
+.gutter{
+  width:44px;flex-shrink:0;background:#0a0e1a;color:#4a5578;text-align:right;padding:12px 8px 12px 0;
+  overflow:hidden;user-select:none;border-right:1px solid var(--border);white-space:pre;
+}
+.code-area{position:relative;flex:1;overflow:hidden}
+.code-highlight,.code-input{
+  position:absolute;inset:0;padding:12px 14px;font-family:var(--mono);font-size:13.5px;line-height:1.55;
+  white-space:pre;overflow:auto;border:none;outline:none;tab-size:4;
+}
+.code-highlight{pointer-events:none;color:#e6edf3;z-index:1}
+.code-input{background:transparent;color:transparent;caret-color:var(--accent);resize:none;z-index:2}
+.code-input::selection{background:rgba(241,190,50,.3)}
+.tok-kw{color:#ff7edb;font-weight:600}
+.tok-str{color:#7ee787}
+.tok-num{color:#79c0ff}
+.tok-com{color:#6b7a99;font-style:italic}
+.tok-bi{color:#ffa657}
+.tok-fn{color:#d2a8ff}
+
+.toolbar{display:flex;gap:8px;padding:10px 14px;background:var(--bg-3);border-top:1px solid var(--border);flex-wrap:wrap}
+.btn{padding:8px 16px;font-weight:600}
+.btn-run{background:var(--green-dark);color:#7bed9f;border:1px solid #1e7a45}
+.btn-run:hover{background:#0a5c2a}
+.btn-check{background:var(--blue);color:#fff}
+.btn-check:hover{background:#2a82d0}
+.btn-ghost{background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--accent)}
+.btn-spacer{flex:1}
+
+.console{
+  background:#05070f;color:#d3e0f0;font-family:var(--mono);font-size:13px;padding:12px 14px;
+  min-height:90px;max-height:220px;overflow:auto;white-space:pre-wrap;line-height:1.5;
+  border-top:1px solid var(--border);
+}
+.console .lbl{color:#5b6a8a}
+.err{color:#ff6b6b}
+
+.results{padding:12px 14px;border-top:1px solid var(--border);background:var(--bg-2)}
+.result-row{display:flex;gap:10px;padding:8px 10px;border-radius:7px;font-size:13.5px;margin-bottom:6px;align-items:flex-start}
+.result-row.pass{background:rgba(46,204,113,.12);border-left:3px solid var(--green)}
+.result-row.fail{background:rgba(231,76,60,.12);border-left:3px solid var(--red)}
+.result-row .ico{font-weight:700}
+.result-row.pass .ico{color:var(--green)}
+.result-row.fail .ico{color:var(--red)}
+.result-row .detail{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:3px;white-space:pre-wrap}
+.banner{padding:12px 16px;border-radius:8px;margin:0 0 12px;font-weight:600;display:flex;align-items:center;gap:10px}
+.banner.ok{background:rgba(46,204,113,.15);color:#7bed9f;border:1px solid var(--green)}
+.banner.no{background:rgba(231,76,60,.15);color:#ff9b8f;border:1px solid var(--red)}
+
+.hint-box{display:none;background:rgba(155,89,182,.12);border-left:3px solid var(--purple);padding:10px 14px;margin-top:10px;border-radius:6px;font-size:13.5px}
+.hint-box.show{display:block}
+
+footer.bottombar{padding:14px 28px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--border);text-align:center}
+footer.bottombar a{color:var(--accent);text-decoration:none}
+
+.solution-code{display:none;margin-top:10px}
+.solution-code.show{display:block}
+
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#3a3a6a;border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:#4d4d85}
+
+@media(max-width:820px){
+  .menu-btn{display:block}
+  .sidebar{position:fixed;top:56px;bottom:0;left:-330px;z-index:50;transition:left .3s}
+  .sidebar.open{left:0;box-shadow:6px 0 24px rgba(0,0,0,.5)}
+  .progress-wrap{min-width:120px}
+  .brand small{display:none}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <button class="menu-btn" id="menuBtn" title="Меню">☰</button>
+  <div class="brand"><span class="logo">🐍</span><span>PyCamp</span><small>бесплатный курс по Python</small></div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-text" id="progressText">0%</span>
+  </div>
+  <button class="tb-btn" id="resetBtn" title="Сбросить прогресс">↺ Сброс</button>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">📚 Программа курса</div>
+    <nav id="courseTree"></nav>
+  </aside>
+
+  <main class="main" id="main">
+    <div class="lesson-head">
+      <div class="lesson-crumbs" id="crumbs"></div>
+      <h1 class="lesson-title" id="lessonTitle">Загрузка…</h1>
+    </div>
+    <div class="workspace">
+      <section class="card">
+        <div class="card-head">📖 Теория и задание</div>
+        <div class="card-body">
+          <div class="theory" id="theoryPane"></div>
+          <div class="task-title" id="taskTitle"></div>
+          <div class="theory" id="taskPane"></div>
+          <button class="btn btn-ghost" id="hintBtn" style="margin-top:10px">💡 Подсказка</button>
+          <div class="hint-box" id="hintBox"></div>
+          <div class="solution-code" id="solutionBox"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">💻 Редактор кода <span style="margin-left:auto;font-weight:400;color:var(--muted);font-size:12px">Ctrl+Enter — запуск</span></div>
+        <div class="editor-wrap">
+          <div class="gutter" id="gutter">1</div>
+          <div class="code-area">
+            <pre class="code-highlight" id="highlight"><code></code></pre>
+            <textarea class="code-input" id="code" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="btn btn-run" id="runBtn">▶ Запустить</button>
+          <button class="btn btn-check" id="checkBtn">✓ Проверить</button>
+          <button class="btn btn-ghost" id="resetCodeBtn">↺ Сбросить код</button>
+          <span class="btn-spacer"></span>
+          <button class="btn btn-ghost" id="solutionBtn">👁 Решение</button>
+        </div>
+        <div class="console" id="console"><span class="lbl">Здесь появится вывод программы…</span></div>
+        <div class="results" id="results" style="display:none"></div>
+      </section>
+    </div>
+    <footer class="bottombar">
+      PyCamp — учебный проект. Python-движок работает полностью в браузере, без интернета.
+    </footer>
+  </main>
+</div>
+
+<script>
+"use strict";
+/* =========================================================================
+   1. ДВИЖОК PYTHON (подмножество языка на JavaScript)
+   Лексер -> Парсер (AST) -> Вычислитель с областями видимости
+   ========================================================================= */
+
+function PyError(msg, line){
+  const e = new Error(msg);
+  e.pyMsg = msg;
+  e.line = line || 0;
+  e.isPy = true;
+  return e;
+}
+function pyTypeName(v){
+  if(v===null) return 'NoneType';
+  if(typeof v==='boolean') return 'bool';
+  if(typeof v==='number') return Number.isInteger(v)?'int':'float';
+  if(typeof v==='string') return 'str';
+  if(Array.isArray(v)) return 'list';
+  if(v instanceof PyTuple) return 'tuple';
+  if(v instanceof PyDict) return 'dict';
+  if(v instanceof PySet) return 'set';
+  if(v instanceof PyFunc) return 'function';
+  if(v instanceof PyBuiltin) return 'builtin_function_or_method';
+  if(v instanceof PyClass) return 'type';
+  if(v instanceof PyInstance) return v.cls.name;
+  if(v instanceof PyModule) return 'module';
+  if(v instanceof PyRange) return 'range';
+  return 'object';
+}
+function typeErr(op, a, b){
+  return PyError("TypeError: unsupported operand type(s) for "+op+": '"+pyTypeName(a)+"' and '"+pyTypeName(b)+"'");
+}
+function toNum(v){
+  if(typeof v==='number') return v;
+  if(typeof v==='boolean') return v?1:0;
+  throw PyError("TypeError: unsupported operand type");
+}
+
+const PY_KEYWORDS = new Set(['if','elif','else','for','while','def','return','break','continue','pass','and','or','not','in','is','import','from','as','class','try','except','finally','raise','lambda','global','nonlocal','with','del','assert','yield']);
+const BUILTIN_NAMES = new Set(['print','input','len','range','int','float','str','bool','list','tuple','dict','set','sum','min','max','abs','round','pow','sorted','reversed','enumerate','zip','type','isinstance','ord','chr','hex','bin','oct','any','all','map','filter','divmod','repr','format']);
+
+/* ------------------------- ЛЕКСЕР ------------------------- */
+function tokenize(src){
+  src = String(src).replace(/\r\n?/g,'\n').replace(/\t/g,'    ');
+  const toks = [];
+  const indents = [0];
+  let i=0; const n=src.length; let line=1; let atStart=true; let paren=0;
+  const P=(t,v)=>toks.push({t:t,v:v,line:line});
+  const isDigit=c=>c>='0'&&c<='9';
+  const isIdStart=c=>/[A-Za-z_]/.test(c);
+  const isId=c=>/[A-Za-z0-9_]/.test(c);
+
+  while(i<n){
+    if(atStart && paren===0){
+      let j=i, ind=0;
+      while(j<n && src[j]===' '){ind++;j++;}
+      if(j>=n) break;
+      if(src[j]==='\n'){ i=j+1; line++; continue; }
+      if(src[j]==='#' && ind>=0){ while(j<n&&src[j]!=='\n')j++; if(j>=n)break; i=j+1; line++; continue; }
+      if(ind>indents[indents.length-1]){ indents.push(ind); P('INDENT',ind); }
+      else{ while(ind<indents[indents.length-1]){ indents.pop(); P('DEDENT',ind); }
+            if(ind!==indents[indents.length-1]) throw PyError('IndentationError: unindent does not match any outer indentation level', line); }
+      i=j; atStart=false; continue;
+    }
+    const c=src[i];
+    if(c==='\n'){ if(paren>0){i++;line++;continue;} P('NEWLINE',null); i++; line++; atStart=true; continue; }
+    if(c===' '||c==='\t'){ i++; continue; }
+    if(c==='#'){ while(i<n&&src[i]!=='\n')i++; continue; }
+
+    // строки с возможным префиксом (f, r, b, u)
+    let pre='';
+    if(/[fFrRbBuU]/.test(c)){
+      let k=i; while(k<n && /[fFrRbBuU]/.test(src[k]) && k-i<2) k++;
+      if(k<n && (src[k]==='"'||src[k]==="'")){ pre=src.slice(i,k); i=k; }
+    }
+    if(src[i]==='"'||src[i]==="'"){
+      const q=src[i]; let triple=false;
+      if(src[i+1]===q&&src[i+2]===q){ triple=true; i+=3; } else i+=1;
+      let out=''; let closed=false;
+      while(i<n){
+        if(triple){ if(src[i]===q&&src[i+1]===q&&src[i+2]===q){ i+=3; closed=true; break; } }
+        else { if(src[i]===q){ i+=1; closed=true; break; } }
+        if(src[i]==='\\'){
+          const nx=src[i+1]; const map={'n':'\n','t':'\t','r':'\r','\\':'\\',"'":"'",'"':'"','0':'\0'};
+          if(nx in map){ out+=map[nx]; i+=2; continue; }
+          if(nx==='\n'){ i+=2; line++; continue; }
+          out+=src[i+1]; i+=2; continue;
+        }
+        if(src[i]==='\n'){ if(!triple) throw PyError('SyntaxError: EOL while scanning string literal', line); out+='\n'; i++; line++; continue; }
+        out+=src[i]; i++;
+      }
+      if(!closed) throw PyError('SyntaxError: unterminated string literal (detected at line '+line+')', line);
+      P(pre.toLowerCase().includes('f')?'FSTRING':'STRING', out);
+      continue;
+    }
+    if(isDigit(c) || (c==='.'&&isDigit(src[i+1]))){
+      let k=i;
+      if(src[i]==='0'&&(src[i+1]==='x'||src[i+1]==='X')){ k=i+2; while(k<n&&/[0-9a-fA-F_]/.test(src[k]))k++; P('NUMBER',parseInt(src.slice(i+2,k).replace(/_/g,''),16)); i=k; continue; }
+      if(src[i]==='0'&&(src[i+1]==='b'||src[i+1]==='B')){ k=i+2; while(k<n&&/[01_]/.test(src[k]))k++; P('NUMBER',parseInt(src.slice(i+2,k).replace(/_/g,''),2)); i=k; continue; }
+      if(src[i]==='0'&&(src[i+1]==='o'||src[i+1]==='O')){ k=i+2; while(k<n&&/[0-7_]/.test(src[k]))k++; P('NUMBER',parseInt(src.slice(i+2,k).replace(/_/g,''),8)); i=k; continue; }
+      while(k<n&&/[0-9_]/.test(src[k]))k++;
+      if(src[k]==='.'){ k++; while(k<n&&/[0-9_]/.test(src[k]))k++; }
+      if(src[k]==='e'||src[k]==='E'){ let m=k+1; if(src[m]==='+'||src[m]==='-')m++; if(isDigit(src[m])){ k=m; while(k<n&&isDigit(src[k]))k++; } }
+      P('NUMBER', parseFloat(src.slice(i,k).replace(/_/g,'')));
+      i=k; continue;
+    }
+    if(isIdStart(c)){
+      let k=i; while(k<n&&isId(src[k]))k++;
+      const w=src.slice(i,k); i=k;
+      if(w==='True'){ P('BOOL',true); }
+      else if(w==='False'){ P('BOOL',false); }
+      else if(w==='None'){ P('NONE',null); }
+      else if(PY_KEYWORDS.has(w)){ P('KW',w); }
+      else P('NAME',w);
+      continue;
+    }
+    const three=src.substr(i,3), two=src.substr(i,2);
+    if(['**=','//=','...'].includes(three)){ P('OP',three); i+=3; continue; }
+    if(['**','//','==','!=','<=','>=','+=','-=','*=','/=','%=','->',':=','<<','>>'].includes(two)){ P('OP',two); i+=2; continue; }
+    if('+-*/%<>=()[]{}.,:;'.includes(c)){ if('([{'.includes(c))paren++; if(')]}'.includes(c))paren--; P('OP',c); i++; continue; }
+    throw PyError('SyntaxError: invalid character '+JSON.stringify(c)+' (line '+line+')', line);
+  }
+  if(!toks.length || toks[toks.length-1].t!=='NEWLINE') P('NEWLINE',null);
+  while(indents.length>1){ indents.pop(); P('DEDENT',0); }
+  P('EOF',null);
+  return toks;
+}
+
+/* ------------------------- ПАРСЕР ------------------------- */
+class Parser{
+  constructor(toks){ this.toks=toks; this.p=0; }
+  peek(k){ return this.toks[this.p+(k||0)]; }
+  next(){ return this.toks[this.p++]; }
+  at(t,v){ const x=this.peek(); return x.t===t && (v===undefined || x.v===v); }
+  expect(t,v){
+    if(!this.at(t,v)){ const x=this.peek();
+      throw PyError('SyntaxError: expected '+(v?("'"+v+"'"):t)+' but got '+(x.t==='NAME'||x.t==='KW'||x.t==='OP'?("'"+x.v+"'"):x.t), x.line); }
+    return this.next();
+  }
+  skipNL(){ while(this.at('NEWLINE')) this.next(); }
+
+  parseProgram(){
+    const body=[]; this.skipNL();
+    while(!this.at('EOF')){ body.push(this.parseStatement()); this.skipNL(); }
+    return {type:'Program', body:body};
+  }
+  parseStatement(){
+    const t=this.peek();
+    if(t.t==='KW'){
+      switch(t.v){
+        case 'if': return this.parseIf();
+        case 'while': return this.parseWhile();
+        case 'for': return this.parseFor();
+        case 'def': return this.parseDef();
+        case 'class': return this.parseClass();
+        case 'return': { this.next(); let v=null; if(!this.at('NEWLINE')&&!this.at('EOF')&&!this.at('DEDENT')) v=this.parseTupleTail(this.parseExpression()); return {type:'Return', value:v}; }
+        case 'break': this.next(); return {type:'Break'};
+        case 'continue': this.next(); return {type:'Continue'};
+        case 'pass': this.next(); return {type:'Pass'};
+        case 'import': return this.parseImport();
+        case 'from': return this.parseFromImport();
+        case 'try': return this.parseTry();
+        case 'raise': { this.next(); let v=null; if(!this.at('NEWLINE')&&!this.at('EOF')) v=this.parseExpression(); return {type:'Raise', value:v}; }
+        case 'global': case 'nonlocal': { this.next(); this.parseExpression(); return {type:'Pass'}; }
+        case 'del': { this.next(); const tgt=this.parseExpression(); return {type:'Del', target:tgt}; }
+        case 'with': { this.next(); this.parseExpression(); this.expect('OP',':'); const b=this.parseBlock(); return {type:'With', body:b}; }
+        case 'assert': { this.next(); const test=this.parseExpression(); let msg=null; if(this.at('OP',',')){ this.next(); msg=this.parseExpression(); } return {type:'Assert', test:test, msg:msg}; }
+      }
+    }
+    return this.parseSimple();
+  }
+  parseBlock(){
+    if(this.at('OP',':')){
+      this.next();
+      if(!this.at('NEWLINE')){
+        const st=this.parseSimple();
+        return [st];
+      }
+    }
+    this.expect('NEWLINE');
+    this.expect('INDENT');
+    const body=[]; this.skipNL();
+    while(!this.at('DEDENT') && !this.at('EOF')){
+      body.push(this.parseStatement()); this.skipNL();
+    }
+    if(this.at('DEDENT')) this.next();
+    return body;
+  }
+  parseIf(){
+    this.next();
+    const test=this.parseExpression();
+    const body=this.parseBlock();
+    let orelse=null;
+    if(this.at('KW','elif')) orelse=[this.parseElif()];
+    else if(this.at('KW','else')){ this.next(); orelse=this.parseBlock(); }
+    return {type:'If', test:test, body:body, orelse:orelse};
+  }
+  parseElif(){
+    this.next();
+    const test=this.parseExpression();
+    const body=this.parseBlock();
+    let orelse=null;
+    if(this.at('KW','elif')) orelse=[this.parseElif()];
+    else if(this.at('KW','else')){ this.next(); orelse=this.parseBlock(); }
+    return {type:'If', test:test, body:body, orelse:orelse};
+  }
+  parseWhile(){
+    this.next();
+    const test=this.parseExpression();
+    const body=this.parseBlock();
+    return {type:'While', test:test, body:body};
+  }
+  parseFor(){
+    this.next();
+    const target=this.parseTarget();
+    this.expect('KW','in');
+    const iter=this.parseExpression();
+    const body=this.parseBlock();
+    return {type:'For', target:target, iter:iter, body:body};
+  }
+  parseTarget(){
+    let e=this.parsePrimary();
+    if(this.at('OP',',')){
+      const items=[e];
+      while(this.at('OP',',')){ this.next(); if(this.at('KW','in')||this.at('NEWLINE')||this.at('OP','=')) break; items.push(this.parsePrimary()); }
+      e={type:'Tuple', items:items};
+    }
+    return e;
+  }
+  parseDef(){
+    this.next();
+    const name=this.expect('NAME').v;
+    this.expect('OP','(');
+    const params=[]; let vararg=null, kwarg=null;
+    while(!this.at('OP',')')){
+      if(this.at('OP','*')){ this.next(); if(this.at('NAME')) vararg=this.expect('NAME').v; }
+      else if(this.at('OP','**')){ this.next(); kwarg=this.expect('NAME').v; }
+      else {
+        const pname=this.expect('NAME').v; let def=null;
+        if(this.at('OP','=')){ this.next(); def=this.parseExpression(); }
+        params.push({name:pname, def:def});
+      }
+      if(this.at('OP',',')) this.next(); else break;
+    }
+    this.expect('OP',')');
+    if(this.at('OP','->')){ this.next(); this.parseExpression(); }
+    const body=this.parseBlock();
+    return {type:'FunctionDef', name:name, params:params, vararg:vararg, kwarg:kwarg, body:body};
+  }
+  parseClass(){
+    this.next();
+    const name=this.expect('NAME').v;
+    const bases=[];
+    if(this.at('OP','(')){
+      this.next();
+      while(!this.at('OP',')')){ bases.push(this.parseExpression()); if(this.at('OP',','))this.next(); else break; }
+      this.expect('OP',')');
+    }
+    const body=this.parseBlock();
+    return {type:'ClassDef', name:name, bases:bases, body:body};
+  }
+  parseImport(){
+    this.next();
+    const mods=[];
+    do{ const base=this.expect('NAME').v; let alias=null; if(this.at('KW','as')){ this.next(); alias=this.expect('NAME').v; } mods.push({name:base, alias:alias}); }while(this.at('OP',',')&&this.next());
+    return {type:'Import', mods:mods};
+  }
+  parseFromImport(){
+    this.next();
+    const mod=this.expect('NAME').v;
+    this.expect('KW','import');
+    const names=[];
+    if(this.at('OP','*')){ this.next(); return {type:'FromImport', mod:mod, names:[{name:'*',alias:null}]}; }
+    do{ const nm=this.expect('NAME').v; let alias=null; if(this.at('KW','as')){this.next();alias=this.expect('NAME').v;} names.push({name:nm,alias:alias}); }while(this.at('OP',',')&&this.next());
+    return {type:'FromImport', mod:mod, names:names};
+  }
+  parseTry(){
+    this.next();
+    const body=this.parseBlock();
+    let handlers=[], finalbody=null;
+    while(this.at('KW','except')){
+      this.next();
+      let excType=null, name=null;
+      if(!this.at('OP',':')){ excType=this.parseExpression(); if(this.at('KW','as')){ this.next(); name=this.expect('NAME').v; } }
+      const hbody=this.parseBlock();
+      handlers.push({excType:excType,name:name,body:hbody});
+    }
+    if(this.at('KW','else')){ this.next(); this.parseBlock(); }
+    if(this.at('KW','finally')){ this.next(); finalbody=this.parseBlock(); }
+    return {type:'Try', body:body, handlers:handlers, finalbody:finalbody};
+  }
+  parseSimple(){
+    let first=this.parseExpression();
+    if(this.at('OP',',')){
+      const items=[first];
+      while(this.at('OP',',')){ this.next(); if(this.at('NEWLINE')||this.at('OP','=')||this.at('EOF')) break; items.push(this.parseExpression()); }
+      first={type:'Tuple', items:items};
+    }
+    if(this.at('OP','=')){
+      const targets=[first];
+      while(this.at('OP','=')){ this.next(); targets.push(this.parseTupleTail(this.parseExpression())); }
+      const value=targets.pop();
+      return {type:'Assign', targets:targets, value:value};
+    }
+    const aug=['+=','-=','*=','/=','//=','%=','**='];
+    if(this.peek().t==='OP' && aug.includes(this.peek().v)){
+      const op=this.next().v.slice(0,-1);
+      const value=this.parseExpression();
+      return {type:'AugAssign', target:first, op:op, value:value};
+    }
+    return {type:'ExprStmt', expr:first};
+  }
+
+  parseTupleTail(first){
+    if(this.at('OP',',')){
+      const items=[first];
+      while(this.at('OP',',')){ this.next(); if(this.at('OP','=')||this.at('NEWLINE')||this.at('EOF')||this.at('DEDENT')||this.at('OP',')')) break; items.push(this.parseExpression()); }
+      return {type:'Tuple', items:items};
+    }
+    return first;
+  }
+  parseExpression(){ return this.parseTernary(); }
+  parseTernary(){
+    const a=this.parseOr();
+    if(this.at('KW','if')){
+      this.next(); const cond=this.parseOr(); this.expect('KW','else'); const b=this.parseOr();
+      return {type:'Ternary', test:cond, body:a, orelse:b};
+    }
+    return a;
+  }
+  parseOr(){
+    let left=this.parseAnd();
+    while(this.at('KW','or')){ this.next(); const right=this.parseAnd(); left={type:'BoolOp', op:'or', left:left, right:right}; }
+    return left;
+  }
+  parseAnd(){
+    let left=this.parseNot();
+    while(this.at('KW','and')){ this.next(); const right=this.parseNot(); left={type:'BoolOp', op:'and', left:left, right:right}; }
+    return left;
+  }
+  parseNot(){
+    if(this.at('KW','not')){ this.next(); return {type:'UnaryOp', op:'not', operand:this.parseNot()}; }
+    return this.parseComparison();
+  }
+  parseComparison(){
+    const left=this.parseArith();
+    const cmpOps=['==','!=','<','>','<=','>='];
+    let op=null;
+    if(this.peek().t==='OP' && cmpOps.includes(this.peek().v)){ op=this.next().v; }
+    else if(this.at('KW','in')){ this.next(); op='in'; }
+    else if(this.at('KW','not') && this.peek(1).t==='KW' && this.peek(1).v==='in'){ this.next(); this.next(); op='not in'; }
+    else if(this.at('KW','is')){ this.next(); if(this.at('KW','not')){ this.next(); op='is not'; } else op='is'; }
+    else return left;
+    const right=this.parseComparison();
+    return {type:'Compare', left:left, ops:[op, right]};
+  }
+  parseArith(){
+    let left=this.parseTerm();
+    while(this.peek().t==='OP' && ['+','-'].includes(this.peek().v)){ const op=this.next().v; left={type:'BinOp', op:op, left:left, right:this.parseTerm()}; }
+    return left;
+  }
+  parseTerm(){
+    let left=this.parseUnary();
+    while(this.peek().t==='OP' && ['*','/','//','%'].includes(this.peek().v)){ const op=this.next().v; left={type:'BinOp', op:op, left:left, right:this.parseUnary()}; }
+    return left;
+  }
+  parseUnary(){
+    if(this.peek().t==='OP' && ['+','-'].includes(this.peek().v)){ const op=this.next().v; return {type:'UnaryOp', op:op, operand:this.parseUnary()}; }
+    return this.parsePower();
+  }
+  parsePower(){
+    const base=this.parsePostfix();
+    if(this.peek().t==='OP' && this.peek().v==='**'){ this.next(); return {type:'BinOp', op:'**', left:base, right:this.parseUnary()}; }
+    return base;
+  }
+  parsePostfix(){
+    let node=this.parsePrimary();
+    while(true){
+      if(this.at('OP','(')){
+        this.next();
+        const args=[]; const kwargs=[];
+        while(!this.at('OP',')')){
+          if(this.at('NAME') && this.peek(1).t==='OP' && this.peek(1).v==='='){ const kk=this.next().v; this.next(); kwargs.push({name:kk, value:this.parseExpression()}); }
+          else if(this.at('OP','*')){ this.next(); args.push({star:true, value:this.parseExpression()}); }
+          else if(this.at('OP','**')){ this.next(); kwargs.push({name:'**', value:this.parseExpression()}); }
+          else args.push(this.parseExpression());
+          if(this.at('OP',',')) this.next(); else break;
+        }
+        this.expect('OP',')');
+        node={type:'Call', func:node, args:args, kwargs:kwargs};
+      } else if(this.at('OP','[')){
+        this.next();
+        const start = this.at('OP',':')?null:this.parseExpression();
+        if(this.at('OP',':')){
+          this.next();
+          const stop = (this.at('OP',']')||this.at('OP',':'))?null:this.parseExpression();
+          let step=null;
+          if(this.at('OP',':')){ this.next(); step=this.at('OP',']')?null:this.parseExpression(); }
+          this.expect('OP',']');
+          node={type:'Slice', obj:node, start:start, stop:stop, step:step};
+        } else {
+          this.expect('OP',']');
+          node={type:'Subscript', obj:node, index:start};
+        }
+      } else if(this.at('OP','.')){
+        this.next();
+        const attr=this.expect('NAME').v;
+        node={type:'Attribute', obj:node, attr:attr};
+      } else break;
+    }
+    return node;
+  }
+  parsePrimary(){
+    const t=this.peek();
+    if(t.t==='NUMBER'){ this.next(); return {type:'Num', value:t.v}; }
+    if(t.t==='STRING'){ this.next(); return {type:'Str', value:t.v}; }
+    if(t.t==='FSTRING'){ this.next(); return {type:'FString', raw:t.v}; }
+    if(t.t==='BOOL'){ this.next(); return {type:'Bool', value:t.v}; }
+    if(t.t==='NONE'){ this.next(); return {type:'None'}; }
+    if(t.t==='NAME'){ this.next(); return {type:'Name', name:t.v}; }
+    if(t.t==='KW' && t.v==='lambda'){
+      this.next();
+      const params=[];
+      while(!this.at('OP',':')){ params.push({name:this.expect('NAME').v, def:null}); if(this.at('OP',','))this.next(); else break; }
+      this.expect('OP',':');
+      const body=this.parseExpression();
+      return {type:'Lambda', params:params, body:body};
+    }
+    if(t.t==='OP' && t.v==='('){
+      this.next();
+      if(this.at('OP',')')){ this.next(); return {type:'Tuple', items:[]}; }
+      const first=this.parseExpression();
+      if(this.at('OP',',')){
+        const items=[first];
+        while(this.at('OP',',')){ this.next(); if(this.at('OP',')'))break; items.push(this.parseExpression()); }
+        this.expect('OP',')');
+        return {type:'Tuple', items:items};
+      }
+      this.expect('OP',')');
+      return first;
+    }
+    if(t.t==='OP' && t.v==='['){
+      this.next();
+      const items=[];
+      while(!this.at('OP',']')){ items.push(this.parseExpression()); if(this.at('OP',','))this.next(); else break; }
+      this.expect('OP',']');
+      return {type:'List', items:items};
+    }
+    if(t.t==='OP' && t.v==='{'){
+      this.next();
+      if(this.at('OP','}')){ this.next(); return {type:'Dict', pairs:[], isSet:true}; }
+      const firstKey=this.parseExpression();
+      if(this.at('OP',':')){
+        this.next();
+        const firstVal=this.parseExpression();
+        const pairs=[[firstKey,firstVal]];
+        while(this.at('OP',',')){ this.next(); if(this.at('OP','}'))break; const k=this.parseExpression(); this.expect('OP',':'); const v=this.parseExpression(); pairs.push([k,v]); }
+        this.expect('OP','}');
+        return {type:'Dict', pairs:pairs, isSet:false};
+      } else {
+        const items=[firstKey];
+        while(this.at('OP',',')){ this.next(); if(this.at('OP','}'))break; items.push(this.parseExpression()); }
+        this.expect('OP','}');
+        return {type:'Set', items:items};
+      }
+    }
+    throw PyError('SyntaxError: invalid syntax', t.line);
+  }
+}
+
+/* ------------------------- ЗНАЧИМЫЕ ТИПЫ ------------------------- */
+class PyTuple{ constructor(items){ this.items=items; } }
+class PyRange{ constructor(start,stop,step){ this.start=start;this.stop=stop;this.step=step||1; }
+  toArray(){ const a=[]; if(this.step>0){ for(let x=this.start;x<this.stop;x+=this.step)a.push(x); } else { for(let x=this.start;x>this.stop;x+=this.step)a.push(x); } return a; } }
+class PyDict{ constructor(){ this.map=new Map(); }
+  get(k){ return this.map.get(hashKey(k)); }
+  has(k){ return this.map.has(hashKey(k)); }
+  set(k,v){ this.map.set(hashKey(k),v); }
+  del(k){ this.map.delete(hashKey(k)); }
+  keys(){ return Array.from(this.map.values()).map(e=>e[0]); }
+  values(){ return Array.from(this.map.values()).map(e=>e[1]); }
+  entries(){ return Array.from(this.map.values()); }
+  clone(){ const d=new PyDict(); for(const e of this.map.values()) d.map.set(hashKey(e[0]),[e[0],e[1]]); return d; } }
+function hashKey(k){ if(k===null)return 'n:None'; if(typeof k==='boolean')return 'b:'+(k?1:0); if(typeof k==='number'&&Number.isInteger(k))return 'i:'+k; return 'r:'+pyRepr(k); }
+class PySet{ constructor(){ this.set=new Set(); this.arr=[]; }
+  add(v){ const h=hashKey(v); if(!this.set.has(h)){ this.set.add(h); this.arr.push(v); } }
+  has(v){ return this.set.has(hashKey(v)); }
+  del(v){ const h=hashKey(v); if(this.set.has(h)){ this.set.delete(h); this.arr=this.arr.filter(x=>hashKey(x)!==h); } }
+  values(){ return this.arr.slice(); } }
+class PyFunc{ constructor(name,params,vararg,kwarg,body,closure,isLambda){ this.name=name;this.params=params;this.vararg=vararg;this.kwarg=kwarg;this.body=body;this.closure=closure;this.isLambda=isLambda; } }
+class PyBuiltin{ constructor(name,fn,self){ this.name=name; this.fn=fn; this.self=self; } }
+class PyClass{ constructor(name,bases,methods){ this.name=name; this.bases=bases||[]; this.methods=methods; } }
+class PyInstance{ constructor(cls){ this.cls=cls; this.attrs=new Map(); } }
+class PyModule{ constructor(name,members){ this.name=name; this.members=members; } }
+class PyExc{ constructor(name){ this.name=name; } }
+const EXC_NAMES=['Exception','BaseException','ValueError','TypeError','KeyError','IndexError','ZeroDivisionError','NameError','AttributeError','RuntimeError','StopIteration','ImportError','FileNotFoundError','AssertionError','OverflowError','NotImplementedError','EOFError','SyntaxError','IndentationError','RecursionError'];
+function pyExcMatch(excType, emsg){
+  if(!excType || !(excType instanceof PyExc)) return true;
+  if(!emsg) return false;
+  const head=String(emsg).split(':')[0];
+  if(excType.name===head) return true;
+  if(excType.name==='Exception'||excType.name==='BaseException') return true;
+  const family={'ZeroDivisionError':['ArithmeticError'],'OverflowError':['ArithmeticError'],'IndexError':['LookupError'],'KeyError':['LookupError'],'IndentationError':['SyntaxError']};
+  const fam=family[head]||[];
+  return fam.indexOf(excType.name)>=0;
+}
+const PY_NATIVE_KINDS={int:1,float:1,str:1,list:1,dict:1,tuple:1,set:1,bool:1};
+
+/* ------------------------- ВЫВОД / REPR ------------------------- */
+function pyRepr(v){
+  if(v instanceof PyInstance&&v.cls instanceof PyExc) return v.cls.name+(v.attrs.has('args')?'('+pyStr(v.attrs.get('args'))+')':'');
+  if(v===null||v===undefined) return 'None';
+  if(v===true) return 'True';
+  if(v===false) return 'False';
+  if(typeof v==='number'){ if(Number.isInteger(v)) return String(v); return String(v); }
+  if(typeof v==='string') return '"'+v.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\t/g,'\\t')+'"';
+  if(Array.isArray(v)) return '['+v.map(pyRepr).join(', ')+']';
+  if(v instanceof PyTuple){ if(v.items.length===1) return '('+pyRepr(v.items[0])+',)'; return '('+v.items.map(pyRepr).join(', ')+')'; }
+  if(v instanceof PyDict) return '{'+v.entries().map(e=>pyRepr(e[0])+': '+pyRepr(e[1])).join(', ')+'}';
+  if(v instanceof PySet){ if(!v.values().length) return 'set()'; return '{'+v.values().map(pyRepr).join(', ')+'}'; }
+  if(v instanceof PyRange) return 'range('+v.start+', '+v.stop+')';
+  if(v instanceof PyFunc||v instanceof PyBuiltin){ const cls=v instanceof PyFunc?'function':'builtin_function_or_method'; return '<'+cls+' '+(v.name||'')+'>'; }
+  if(v instanceof PyClass) return "<class '__main__."+v.name+"'>";
+  if(v instanceof PyInstance) return '<'+v.cls.name+' object>';
+  if(v instanceof PyModule) return "<module '"+v.name+"'>";
+  return String(v);
+}
+function pyStr(v){
+  if(typeof v==='string') return v;
+  if(v instanceof PyInstance&&v.cls instanceof PyExc){
+    const a=v.attrs.get('args');
+    let inside='';
+    if(a instanceof PyTuple) inside=a.items.map(pyStr).join(', ');
+    else if(a!==null&&a!==undefined) inside=pyStr(a);
+    return inside;
+  }
+  return pyRepr(v);
+}
+function pyTruthy(v){
+  if(v===null||v===undefined||v===false) return false;
+  if(v===true) return true;
+  if(typeof v==='number') return v!==0;
+  if(typeof v==='string') return v.length>0;
+  if(Array.isArray(v)) return v.length>0;
+  if(v instanceof PyTuple) return v.items.length>0;
+  if(v instanceof PyDict) return v.entries().length>0;
+  if(v instanceof PySet) return v.values().length>0;
+  if(v instanceof PyRange) return v.toArray().length>0;
+  return true;
+}
+function iterableOf(v){
+  if(Array.isArray(v)) return v.slice();
+  if(typeof v==='string') return v.split('');
+  if(v instanceof PyTuple) return v.items.slice();
+  if(v instanceof PyRange) return v.toArray();
+  if(v instanceof PyDict) return v.keys();
+  if(v instanceof PySet) return v.values();
+  throw PyError("TypeError: '"+pyTypeName(v)+"' object is not iterable");
+}
+
+/* ------------------------- ОКРУЖЕНИЕ ------------------------- */
+class Env{
+  constructor(parent){ this.vars=new Map(); this.parent=parent||null; }
+  get(name){
+    let e=this;
+    while(e){ if(e.vars.has(name)) return e.vars.get(name); e=e.parent; }
+    throw PyError("NameError: name '"+name+"' is not defined");
+  }
+  has(name){ let e=this; while(e){ if(e.vars.has(name))return true; e=e.parent; } return false; }
+  setLocal(name,val){ this.vars.set(name,val); }
+  set(name,val){ this.vars.set(name,val); }
+}
+
+/* ------------------------- ВЫПОЛНЕНИЕ ------------------------- */
+const RETURN=new function ReturnSig(){}, BREAK={}, CONTINUE={};
+
+function runProgram(ast, ctx){
+  const globalEnv=new Env(null);
+  installBuiltins(globalEnv, ctx);
+  pyExecBlock(ast.body, globalEnv, ctx);
+  return globalEnv;
+}
+
+function pyExecBlock(stmts, env, ctx){
+  for(const s of stmts) pyExec(s, env, ctx);
+}
+function pyExec(node, env, ctx){
+  switch(node.type){
+    case 'ExprStmt': pyEval(node.expr, env, ctx); return;
+    case 'Pass': return;
+    case 'Assign': {
+      const value=pyEval(node.value, env, ctx);
+      for(const t of node.targets) assignTarget(t, value, env, ctx);
+      return;
+    }
+    case 'AugAssign': {
+      const cur=targetValue(node.target, env, ctx);
+      const rhs=pyEval(node.value, env, ctx);
+      const res=binop(node.op, cur, rhs);
+      assignTarget(node.target, res, env, ctx);
+      return;
+    }
+    case 'If': {
+      if(pyTruthy(pyEval(node.test, env, ctx))) pyExecBlock(node.body, env, ctx);
+      else if(node.orelse) pyExecBlock(node.orelse, env, ctx);
+      return;
+    }
+    case 'While': {
+      let guard=0;
+      while(pyTruthy(pyEval(node.test, env, ctx))){
+        try{ pyExecBlock(node.body, env, ctx); }
+        catch(e){ if(e===BREAK) break; if(e===CONTINUE) continue; throw e; }
+        if(++guard>1000000) throw PyError('RuntimeError: возможен бесконечный цикл (превышен лимит итераций)');
+      }
+      return;
+    }
+    case 'For': {
+      const it=iterableOf(pyEval(node.iter, env, ctx));
+      for(const item of it){
+        assignTarget(node.target, item, env, ctx);
+        try{ pyExecBlock(node.body, env, ctx); }
+        catch(e){ if(e===BREAK) break; if(e===CONTINUE) continue; throw e; }
+      }
+      return;
+    }
+    case 'FunctionDef': {
+      const f=new PyFunc(node.name, node.params, node.vararg, node.kwarg, node.body, env, false);
+      env.setLocal(node.name, f);
+      return;
+    }
+    case 'Return': {
+      const v = node.value?pyEval(node.value, env, ctx):null;
+      throw {__ret:true, value:v};
+    }
+    case 'Break': throw BREAK;
+    case 'Continue': throw CONTINUE;
+    case 'ClassDef': {
+      const methods=new Map();
+      const classEnv=new Env(env);
+      pyExecBlock(node.body, classEnv, ctx);
+      for(const [k,v] of classEnv.vars) methods.set(k,v);
+      const bases=node.bases.map(b=>{ const v=pyEval(b,env,ctx); if(!(v instanceof PyClass)) throw PyError("TypeError: base must be a class"); return v; });
+      env.setLocal(node.name, new PyClass(node.name, bases, methods));
+      return;
+    }
+    case 'Import': {
+      for(const m of node.mods){ const mod=loadModule(m.name); env.setLocal(m.alias||m.name, mod); }
+      return;
+    }
+    case 'FromImport': {
+      const mod=loadModule(node.mod);
+      for(const it of node.names){
+        if(it.name==='*'){ for(const k in mod.members) env.setLocal(k, mod.members[k]); }
+        else { if(!(it.name in mod.members)) throw PyError("ImportError: cannot import name '"+it.name+"'"); env.setLocal(it.alias||it.name, mod.members[it.name]); }
+      }
+      return;
+    }
+    case 'Try': {
+      try{ pyExecBlock(node.body, env, ctx); }
+      catch(e){
+        if(e===BREAK||e===CONTINUE||(e&&e.__ret)) throw e;
+        let handled=false;
+        for(const h of node.handlers){
+          if(!h.excType){ if(h.name) env.setLocal(h.name, e); pyExecBlock(h.body, env, ctx); handled=true; break; }
+          let ht; try{ ht=pyEval(h.excType, env, ctx); }catch(e2){ throw e; }
+          if(ht instanceof PyExc){
+            if(pyExcMatch(ht, e.pyMsg)){
+              const bareMsg=String(e.pyMsg||'').split(': ').slice(1).join(': ');
+              const excInst=new PyInstance(ht); excInst.attrs.set('args', new PyTuple(bareMsg?[bareMsg]:[]));
+              if(h.name) env.setLocal(h.name, excInst);
+              pyExecBlock(h.body, env, ctx); handled=true; break;
+            }
+          } else if(pyTruthy(ht)){
+            if(h.name) env.setLocal(h.name, e);
+            pyExecBlock(h.body, env, ctx); handled=true; break;
+          }
+        }
+        if(!handled) throw e;
+      } finally { if(node.finalbody) pyExecBlock(node.finalbody, env, ctx); }
+      return;
+    }
+    case 'Raise': {
+      const v=node.value?pyEval(node.value, env, ctx):null;
+      if(v===null||v===undefined) throw PyError('RuntimeError: No active exception to re-raise');
+      if(v instanceof Error) throw v;
+      if(v instanceof PyInstance&&v.cls instanceof PyExc){
+        const a=v.attrs.get('args');
+        let msg='';
+        if(a instanceof PyTuple){ if(a.items.length) msg=a.items.map(pyStr).join(', '); }
+        else if(a!==null&&a!==undefined) msg=pyStr(a);
+        throw PyError(v.cls.name+(msg?(': '+msg):''));
+      }
+      throw PyError(pyStr(v));
+    }
+    case 'Del': {
+      if(node.target.type==='Name'){ env.vars.delete(node.target.name); }
+      else if(node.target.type==='Subscript'){ const o=pyEval(node.target.obj,env,ctx); const k=pyEval(node.target.index,env,ctx); if(o instanceof PyDict)o.del(k); else if(Array.isArray(o))o.splice(normIndex(pyEval(node.target.index,env,ctx),o.length),1); }
+      else if(node.target.type==='Attribute'){ const o=pyEval(node.target.obj,env,ctx); if(o instanceof PyInstance)o.attrs.delete(node.target.attr); }
+      return;
+    }
+    case 'With': { pyExecBlock(node.body, env, ctx); return; }
+    case 'Assert': {
+      if(!pyTruthy(pyEval(node.test, env, ctx))) throw PyError('AssertionError'+(node.msg?(': '+pyStr(pyEval(node.msg,env,ctx))):''));
+      return;
+    }
+    default:
+      pyEval(node, env, ctx);
+  }
+}
+function normIndex(i,len){ if(i<0) i+=len; return i; }
+
+function assignTarget(t, value, env, ctx){
+  if(t.type==='Name'){ env.set(t.name, value); return; }
+  if(t.type==='Attribute'){
+    const obj=pyEval(t.obj, env, ctx);
+    if(obj instanceof PyInstance){ obj.attrs.set(t.attr, value); return; }
+    if(obj instanceof PyModule){ obj.members[t.attr]=value; return; }
+    throw PyError("AttributeError: can't set attribute");
+  }
+  if(t.type==='Subscript'){
+    const obj=pyEval(t.obj, env, ctx);
+    const idx=pyEval(t.index, env, ctx);
+    if(obj instanceof PyDict){ obj.set(idx, value); return; }
+    if(Array.isArray(obj)){ obj[normIndex(idx, obj.length)]=value; return; }
+    throw PyError("TypeError: '"+pyTypeName(obj)+"' object does not support item assignment");
+  }
+  if(t.type==='Tuple'||t.type==='List'){
+    const items=iterableOf(value);
+    const targets=t.items;
+    if(items.length!==targets.length) throw PyError('ValueError: too many values to unpack (expected '+targets.length+')');
+    for(let i=0;i<targets.length;i++) assignTarget(targets[i], items[i], env, ctx);
+    return;
+  }
+  throw PyError('SyntaxError: cannot assign to this expression');
+}
+function targetValue(t, env, ctx){
+  if(t.type==='Name') return env.get(t.name);
+  if(t.type==='Attribute'){ const o=pyEval(t.obj,env,ctx); return getAttr(o, t.attr); }
+  if(t.type==='Subscript'){ const o=pyEval(t.obj,env,ctx); const k=pyEval(t.index,env,ctx); return getItem(o,k); }
+  throw PyError('SyntaxError: invalid target');
+}
+
+function pyEval(node, env, ctx){
+  switch(node.type){
+    case 'Num': return node.value;
+    case 'Str': return node.value;
+    case 'Bool': return node.value;
+    case 'None': return null;
+    case 'Name': return env.get(node.name);
+    case 'FString': return evalFString(node.raw, env, ctx);
+    case 'List': return node.items.map(x=>pyEval(x,env,ctx));
+    case 'Tuple': return new PyTuple(node.items.map(x=>pyEval(x,env,ctx)));
+    case 'Set': { const s=new PySet(); node.items.forEach(x=>s.add(pyEval(x,env,ctx))); return s; }
+    case 'Dict': { const d=new PyDict(); node.pairs.forEach(p=>d.set(pyEval(p[0],env,ctx), pyEval(p[1],env,ctx))); return d; }
+    case 'BinOp': return binop(node.op, pyEval(node.left,env,ctx), pyEval(node.right,env,ctx));
+    case 'UnaryOp': {
+      const v=pyEval(node.operand,env,ctx);
+      if(node.op==='not') return !pyTruthy(v);
+      if(node.op==='-'){ if(typeof v==='number')return -v; if(typeof v==='boolean')return v?-1:0; throw PyError("TypeError: bad operand type for unary -: '"+pyTypeName(v)+"'"); }
+      if(node.op==='+'){ if(typeof v==='number')return v; if(typeof v==='boolean')return v?1:0; throw PyError("TypeError: bad operand type for unary +: '"+pyTypeName(v)+"'"); }
+    }
+    case 'BoolOp': {
+      const left=pyEval(node.left,env,ctx);
+      if(node.op==='and') return pyTruthy(left)?pyEval(node.right,env,ctx):left;
+      else return pyTruthy(left)?left:pyEval(node.right,env,ctx);
+    }
+    case 'Compare': {
+      let a=pyEval(node.left,env,ctx);
+      for(let i=0;i<node.ops.length;i+=2){
+        const b=pyEval(node.ops[i+1],env,ctx);
+        if(!compareOp(node.ops[i], a, b)) return false;
+        a=b;
+      }
+      return true;
+    }
+    case 'Ternary': return pyTruthy(pyEval(node.test,env,ctx))?pyEval(node.body,env,ctx):pyEval(node.orelse,env,ctx);
+    case 'Subscript': { const o=pyEval(node.obj,env,ctx); const k=pyEval(node.index,env,ctx); return getItem(o,k); }
+    case 'Slice': {
+      const o=pyEval(node.obj,env,ctx);
+      const start=node.start?pyEval(node.start,env,ctx):null;
+      const stop=node.stop?pyEval(node.stop,env,ctx):null;
+      const step=node.step?pyEval(node.step,env,ctx):null;
+      return doSlice(o,start,stop,step);
+    }
+    case 'Attribute': { const o=pyEval(node.obj,env,ctx); return getAttr(o, node.attr); }
+    case 'Call': return pyCall(node, env, ctx);
+    case 'Lambda': return new PyFunc('<lambda>', node.params, null, null, [{type:'Return', value:node.body}], env, true);
+    default: throw PyError('Unknown node: '+node.type);
+  }
+}
+
+function evalFString(raw, env, ctx){
+  let out=''; let i=0;
+  while(i<raw.length){
+    const c=raw[i];
+    if(c==='{'){
+      if(raw[i+1]==='{'){ out+='{'; i+=2; continue; }
+      let depth=1; let j=i+1;
+      while(j<raw.length && depth>0){ if(raw[j]==='{')depth++; else if(raw[j]==='}')depth--; if(depth===0)break; j++; }
+      const expr=raw.slice(i+1,j);
+      out+=fstringEval(expr, env, ctx);
+      i=j+1; continue;
+    }
+    if(c==='}' && raw[i+1]==='}'){ out+='}'; i+=2; continue; }
+    out+=c; i++;
+  }
+  return out;
+}
+function fstringEval(expr, env, ctx){
+  // Поддержка спецификаторов формата {x:.2f}
+  let fmt=null;
+  const ci=expr.lastIndexOf(':');
+  if(ci>=0){ const maybe=expr.slice(ci+1); if(!/[()\[\]'"]/.test(maybe)){ fmt=maybe; expr=expr.slice(0,ci); } }
+  // конвертация !r
+  let conv=null;
+  if(expr.endsWith('!r')){ conv='r'; expr=expr.slice(0,-2); }
+  else if(expr.endsWith('!s')){ conv='s'; expr=expr.slice(0,-2); }
+  try{
+    const toks=tokenize(expr);
+    const p=new Parser(toks);
+    const ast=p.parseExpression();
+    let v=pyEval(ast, env, ctx);
+    if(conv==='r') return pyRepr(v);
+    let s=pyStr(v);
+    if(fmt) s=applyFormat(v, fmt);
+    return s;
+  }catch(e){ return '{'+expr+'}'; }
+}
+function applyFormat(v, fmt){
+  const m=/^([<>^]?)(\d*)(?:\.(\d+))?([fdsx%,]?)$/.exec(fmt);
+  if(!m) return pyStr(v);
+  const align=m[1], width=parseInt(m[2]||'0',10), prec=m[3]?parseInt(m[3],10):null, type=m[4];
+  let s;
+  if(type==='f'){ s=(typeof v==='number'?v:parseFloat(v)).toFixed(prec===null?6:prec); }
+  else if(type==='d'){ s=String(Math.trunc(v)); }
+  else if(type==='x'){ s=Math.trunc(v).toString(16); }
+  else if(type==='%'){ s=((typeof v==='number'?v:0)*100).toFixed(prec===null?6:prec)+'%'; }
+  else if(type===','){ s=Math.trunc(v).toLocaleString('ru-RU'); }
+  else s=pyStr(v);
+  if(width>s.length){
+    const pad=width-s.length;
+    if(align==='<') s=s+' '.repeat(pad);
+    else if(align==='^'){ const l=Math.floor(pad/2); s=' '.repeat(l)+s+' '.repeat(pad-l); }
+    else s=' '.repeat(pad)+s;
+  }
+  return s;
+}
+
+function pyCall(node, env, ctx){
+  const fn=pyEval(node.func, env, ctx);
+  const args=[];
+  for(const a of node.args){ if(a&&a.star){ const arr=iterableOf(pyEval(a.value,env,ctx)); arr.forEach(x=>args.push(x)); } else args.push(pyEval(a,env,ctx)); }
+  const kwargs={};
+  for(const kw of node.kwargs){ if(kw.name==='**'){ const d=pyEval(kw.value,env,ctx); if(d instanceof PyDict){ d.entries().forEach(e=>kwargs[pyStr(e[0])]=e[1]); } } else kwargs[kw.name]=pyEval(kw.value,env,ctx); }
+  return callValue(fn, args, kwargs, ctx);
+}
+function callValue(fn, args, kwargs, ctx){
+  if(fn instanceof PyBuiltin){ return fn.fn.apply(null, [args, kwargs, ctx, fn.self]); }
+  if(fn instanceof PyFunc){ return callFunc(fn, args, kwargs, ctx); }
+  if(fn instanceof PyClass){ return instantiate(fn, args, kwargs, ctx); }
+  if(fn instanceof PyMethod){ return fn.invoke(args, kwargs, ctx); }
+  throw PyError("TypeError: '"+pyTypeName(fn)+"' object is not callable");
+}
+class PyMethod{ constructor(recv, name){ this.recv=recv; this.name=name; } invoke(args,kwargs,ctx){ return callStringListMethod(this.recv, this.name, args, kwargs, ctx); } }
+
+function callFunc(f, args, kwargs, ctx){
+  const local=new Env(f.closure);
+  let ai=0;
+  for(const p of f.params){
+    if(ai<args.length){ local.setLocal(p.name, args[ai++]); }
+    else if(p.name in kwargs){ local.setLocal(p.name, kwargs[p.name]); }
+    else if(p.def!==null){ local.setLocal(p.name, pyEval(p.def, f.closure, ctx)); }
+    else throw PyError("TypeError: "+f.name+"() missing required argument: '"+p.name+"'");
+  }
+  if(f.vararg){ local.setLocal(f.vararg, new PyTuple(args.slice(ai))); }
+  if(f.kwarg){ const d=new PyDict(); for(const k in kwargs) d.set(k,kwargs[k]); local.setLocal(f.kwarg, d); }
+  try{ pyExecBlock(f.body, local, ctx); }
+  catch(e){ if(e && e.__ret) return e.value; throw e; }
+  return null;
+}
+function instantiate(cls, args, kwargs, ctx){
+  const inst=new PyInstance(cls);
+  const init=findMethod(cls, '__init__');
+  if(init) callFunc(bindMethod(init, inst), args.slice(1?0:0), kwargs, ctx);
+  return inst;
+}
+function findMethod(cls, name){
+  for(const m of cls.methods){ if(m[0]===name) return m[1]; }
+  for(const b of cls.bases){ const r=findMethod(b,name); if(r) return r; }
+  return null;
+}
+function bindMethod(fn, self){
+  const nf=new PyFunc(fn.name, [{name:'self',def:null}].concat(fn.params), fn.vararg, fn.kwarg, fn.body, fn.closure, fn.isLambda);
+  nf.__boundSelf=self;
+  const orig=nf;
+  const wrapper=new PyFunc(fn.name, fn.params, fn.vararg, fn.kwarg, fn.body, fn.closure, fn.isLambda);
+  wrapper.__self=self;
+  return wrapper;
+}
+function callFuncWithSelf(f, self, args, kwargs, ctx){
+  const local=new Env(f.closure);
+  local.setLocal('self', self);
+  let ai=0;
+  for(const p of f.params){ if(ai<args.length) local.setLocal(p.name,args[ai++]); else if(p.name in kwargs) local.setLocal(p.name,kwargs[p.name]); else if(p.def!==null) local.setLocal(p.name, pyEval(p.def,f.closure,ctx)); else throw PyError("TypeError: missing argument '"+p.name+"'"); }
+  try{ pyExecBlock(f.body, local, ctx); }catch(e){ if(e&&e.__ret) return e.value; throw e; }
+  return null;
+}
+// Переопределяем callFunc для поддержки связанного self
+const _origCallFunc = callFunc;
+callFunc = function(f, args, kwargs, ctx){
+  if(f && f.__self){ return callFuncWithSelf(f, f.__self, args, kwargs, ctx); }
+  return _origCallFunc(f, args, kwargs, ctx);
+};
+
+function binop(op, a, b){
+  switch(op){
+    case '+': {
+      if(typeof a==='string'&&typeof b==='string') return a+b;
+      if(typeof a==='string'||typeof b==='string'){
+        if(typeof a==='string'&&typeof b!=='string') throw typeErr('+',a,b);
+        if(typeof b==='string'&&typeof a!=='string') throw typeErr('+',a,b);
+      }
+      if(Array.isArray(a)&&Array.isArray(b)) return a.concat(b);
+      if(a instanceof PyTuple&&b instanceof PyTuple) return new PyTuple(a.items.concat(b.items));
+      if(typeof a==='number'&&typeof b==='number') return a+b;
+      if(typeof a==='boolean'&&typeof b==='number') return a+b;
+      if(typeof a==='number'&&typeof b==='boolean') return a+b;
+      throw typeErr('+',a,b);
+    }
+    case '-': {
+      if(a instanceof PySet&&b instanceof PySet){ const s=new PySet(); a.values().forEach(x=>{ if(!b.has(x)) s.add(x); }); return s; }
+      return toNum(a)-toNum(b);
+    }
+    case '*': {
+      if(typeof a==='string'&&typeof b==='number'){ if(b<=0)return ''; return a.repeat(Math.floor(b)); }
+      if(typeof b==='string'&&typeof a==='number'){ if(a<=0)return ''; return b.repeat(Math.floor(a)); }
+      if(Array.isArray(a)&&typeof b==='number'){ const out=[]; for(let i=0;i<b;i++)out.push.apply(out,a); return out; }
+      if(typeof a==='number'&&Array.isArray(b)){ const out=[]; for(let i=0;i<a;i++)out.push.apply(out,b); return out; }
+      if(a instanceof PyTuple&&typeof b==='number'){ const out=[]; for(let i=0;i<b;i++)out.push.apply(out,a.items); return new PyTuple(out); }
+      if(typeof a==='number'&&b instanceof PyTuple){ const out=[]; for(let i=0;i<a;i++)out.push.apply(out,b.items); return new PyTuple(out); }
+      return toNum(a)*toNum(b);
+    }
+    case '/': {
+      const d=toNum(b); if(d===0) throw PyError('ZeroDivisionError: division by zero');
+      return toNum(a)/d;
+    }
+    case '//': {
+      const d=toNum(b); if(d===0) throw PyError('ZeroDivisionError: integer division or modulo by zero');
+      return Math.floor(toNum(a)/d);
+    }
+    case '%': {
+      if(typeof a==='string'){ // старый формат %s
+        let s=a; const parts=Array.isArray(b)||b instanceof PyTuple?iterableOf(b):[b];
+        let i=0; return s.replace(/%[sdrf]/g, function(){ const v=parts[i++]; return pyStr(v); });
+      }
+      const d=toNum(b); if(d===0) throw PyError('ZeroDivisionError: integer division or modulo by zero');
+      return ((toNum(a)%d)+d)%d;
+    }
+    case '**': return Math.pow(toNum(a), toNum(b));
+    case '&': { if(a instanceof PySet&&b instanceof PySet){ const s=new PySet(); a.values().forEach(x=>{ if(b.has(x))s.add(x); }); return s; } return toNum(a)&toNum(b); }
+    case '|': { if(a instanceof PySet&&b instanceof PySet){ const s=new PySet(); a.values().forEach(x=>s.add(x)); b.values().forEach(x=>s.add(x)); return s; } if(a instanceof PyDict&&b instanceof PyDict){ const d=a.clone(); b.entries().forEach(e=>d.set(e[0],e[1])); return d; } return toNum(a)|toNum(b); }
+    case '^': { if(a instanceof PySet&&b instanceof PySet){ const s=new PySet(); a.values().forEach(x=>{ if(!b.has(x))s.add(x); }); b.values().forEach(x=>{ if(!a.has(x))s.add(x); }); return s; } return toNum(a)^toNum(b); }
+    default: throw PyError("SyntaxError: unknown operator "+op);
+  }
+}
+function compareOp(op, a, b){
+  switch(op){
+    case '==': return pyEquals(a,b);
+    case '!=': return !pyEquals(a,b);
+    case '<': return pyLess(a,b);
+    case '>': return pyLess(b,a);
+    case '<=': return pyLess(a,b)||pyEquals(a,b);
+    case '>=': return pyLess(b,a)||pyEquals(a,b);
+    case 'in': return contains(b,a);
+    case 'not in': return !contains(b,a);
+    case 'is': return a===b||(a===null&&b===null);
+    case 'is not': return !(a===b||(a===null&&b===null));
+  }
+  throw PyError('unknown comparison '+op);
+}
+function pyEquals(a,b){
+  if(a===null||b===null) return a===b;
+  if(typeof a==='boolean'&&typeof b==='number') return (a?1:0)===b;
+  if(typeof a==='number'&&typeof b==='boolean') return a===(b?1:0);
+  if(typeof a!==typeof b && !(Array.isArray(a)&&Array.isArray(b))){ if(a instanceof PyTuple&&b instanceof PyTuple){} else return false; }
+  if(Array.isArray(a)&&Array.isArray(b)){ if(a.length!==b.length)return false; for(let i=0;i<a.length;i++) if(!pyEquals(a[i],b[i]))return false; return true; }
+  if(a instanceof PyTuple&&b instanceof PyTuple){ if(a.items.length!==b.items.length)return false; for(let i=0;i<a.items.length;i++) if(!pyEquals(a.items[i],b.items[i]))return false; return true; }
+  if(a instanceof PyDict&&b instanceof PyDict){ const ea=a.entries(),eb=b.entries(); if(ea.length!==eb.length)return false; for(const e of ea){ if(!b.has(e[0])||!pyEquals(b.get(e[0]),e[1]))return false; } return true; }
+  if(a instanceof PySet&&b instanceof PySet){ const va=a.values(); if(va.length!==b.values().length)return false; return va.every(x=>b.has(x)); }
+  return a===b;
+}
+function pyLess(a,b){
+  if(typeof a==='number'&&typeof b==='number') return a<b;
+  if(typeof a==='string'&&typeof b==='string') return a<b;
+  if(Array.isArray(a)&&Array.isArray(b)){ for(let i=0;i<Math.min(a.length,b.length);i++){ if(pyLess(a[i],b[i]))return true; if(pyLess(b[i],a[i]))return false; } return a.length<b.length; }
+  throw PyError("TypeError: '<' not supported between instances of '"+pyTypeName(a)+"' and '"+pyTypeName(b)+"'");
+}
+function contains(container, item){
+  if(typeof container==='string'){ if(typeof item!=='string') throw PyError("TypeError: 'in <string>' requires string as left operand"); return container.includes(item); }
+  if(Array.isArray(container)) return container.some(x=>pyEquals(x,item));
+  if(container instanceof PyTuple) return container.items.some(x=>pyEquals(x,item));
+  if(container instanceof PyDict) return container.has(item);
+  if(container instanceof PySet) return container.has(item);
+  if(container instanceof PyRange) return container.toArray().some(x=>pyEquals(x,item));
+  throw PyError("TypeError: argument of type '"+pyTypeName(container)+"' is not iterable");
+}
+function getItem(o, k){
+  if(o instanceof PyDict){ if(!o.has(k)) throw PyError("KeyError: "+pyRepr(k)); return o.get(k); }
+  if(Array.isArray(o)){ const i=normIndex(k,o.length); if(i<0||i>=o.length) throw PyError('IndexError: list index out of range'); return o[i]; }
+  if(o instanceof PyTuple){ const i=normIndex(k,o.items.length); if(i<0||i>=o.items.length) throw PyError('IndexError: tuple index out of range'); return o.items[i]; }
+  if(typeof o==='string'){ const i=normIndex(k,o.length); if(i<0||i>=o.length) throw PyError('IndexError: string index out of range'); return o[i]; }
+  if(o instanceof PyRange){ return o.toArray()[normIndex(k,o.toArray().length)]; }
+  throw PyError("TypeError: '"+pyTypeName(o)+"' object is not subscriptable");
+}
+function doSlice(o, start, stop, step){
+  let arr; let isStr=false;
+  if(typeof o==='string'){ arr=o.split(''); isStr=true; }
+  else if(Array.isArray(o)) arr=o.slice();
+  else if(o instanceof PyTuple) arr=o.items.slice();
+  else if(o instanceof PyRange) arr=o.toArray();
+  else throw PyError("TypeError: '"+pyTypeName(o)+"' object is not subscriptable");
+  const n=arr.length;
+  let st = step===null||step===undefined?1:step;
+  if(st===0) throw PyError('ValueError: slice step cannot be zero');
+  let s = (start===null||start===undefined)?(st>0?0:n-1):start;
+  let e = (stop===null||stop===undefined)?(st>0?n:-1):stop;
+  if(s<0)s+=n; if(e<0)e+=n;
+  const out=[];
+  if(st>0){ if(s<0)s=0; if(e>n)e=n; for(let i=s;i<e;i+=st)out.push(arr[i]); }
+  else { if(s>n-1)s=n-1; for(let i=s;i>e;i+=st){ if(i>=0&&i<n)out.push(arr[i]); } }
+  return isStr?out.join(''):(o instanceof PyTuple?new PyTuple(out):out);
+}
+function getAttr(o, name){
+  if(o instanceof PyInstance){
+    if(o.attrs.has(name)) return o.attrs.get(name);
+    const m=findMethod(o.cls, name);
+    if(m){ const w=new PyFunc(m.name, m.params, m.vararg, m.kwarg, m.body, m.closure, m.isLambda); w.__self=o; return w; }
+    throw PyError("AttributeError: '"+o.cls.name+"' object has no attribute '"+name+"'");
+  }
+  if(o instanceof PyModule){ if(name in o.members) return o.members[name]; throw PyError("AttributeError: module '"+o.name+"' has no attribute '"+name+"'"); }
+  if(o instanceof PyClass){ const m=findMethod(o,name); if(m) return m; throw PyError("AttributeError: type object '"+o.name+"' has no attribute '"+name+"'"); }
+  if(typeof o==='string'||Array.isArray(o)||o instanceof PyDict||o instanceof PySet||o instanceof PyTuple)
+    return new PyMethod(o, name);
+  if(typeof o==='number') throw PyError("AttributeError: '"+pyTypeName(o)+"' object has no attribute '"+name+"'");
+  throw PyError("AttributeError: '"+pyTypeName(o)+"' object has no attribute '"+name+"'");
+}
+
+/* ------------------------- методы строк/списков/словарей/множеств ------------------------- */
+function callStringListMethod(recv, name, args, kwargs, ctx){
+  const bad=()=>{ throw PyError("AttributeError: '"+pyTypeName(recv)+"' object has no attribute '"+name+"'"); };
+  if(typeof recv==='string'){
+    switch(name){
+      case 'upper': return recv.toUpperCase();
+      case 'lower': return recv.toLowerCase();
+      case 'title': return recv.replace(/\w\S*/g, t=>t[0].toUpperCase()+t.slice(1).toLowerCase());
+      case 'capitalize': return recv.charAt(0).toUpperCase()+recv.slice(1).toLowerCase();
+      case 'swapcase': return recv.replace(/[a-zA-Zа-яА-Я]/g, c=>c===c.toLowerCase()?c.toUpperCase():c.toLowerCase());
+      case 'strip': return args.length?stripChars(recv,args[0],'both'):recv.trim();
+      case 'lstrip': return args.length?stripChars(recv,args[0],'left'):recv.replace(/^\s+/,'');
+      case 'rstrip': return args.length?stripChars(recv,args[0],'right'):recv.replace(/\s+$/,'');
+      case 'split': { const sep=args.length?args[0]:null; let pieces = sep===null?recv.trim().split(/\s+/):recv.split(sep); if(sep===null&&recv.trim()==='')pieces=[]; if(args.length>1){ const max=args[1]; if(sep===null){/*skip*/} } return pieces; }
+      case 'rsplit': { const sep=args.length?args[0]:null; return sep===null?recv.trim().split(/\s+/).reverse().reverse():recv.split(sep); }
+      case 'join': { const arr=iterableOf(args[0]); return arr.map(x=>{ if(typeof x!=='string') throw PyError('TypeError: sequence item: expected str instance'); return x; }).join(recv); }
+      case 'replace': { const target=args[0], repl=args[1]; const cnt=args.length>2?args[2]:null; if(cnt===null)return recv.split(target).join(repl); let count=0; let res=recv; let idx=0; while(count<cnt){ const p=res.indexOf(target,idx); if(p<0)break; res=res.slice(0,p)+repl+res.slice(p+target.length); idx=p+repl.length; count++; } return res; }
+      case 'find': return recv.indexOf(args[0]);
+      case 'rfind': return recv.lastIndexOf(args[0]);
+      case 'index': { const p=recv.indexOf(args[0]); if(p<0) throw PyError('ValueError: substring not found'); return p; }
+      case 'count': { if(args[0]==='')return recv.length+1; let c=0,i=0; while((i=recv.indexOf(args[0],i))>=0){c++;i+=args[0].length;} return c; }
+      case 'startswith': return recv.startsWith(args[0]);
+      case 'endswith': return recv.endsWith(args[0]);
+      case 'isdigit': return recv.length>0 && /^[0-9]+$/.test(recv);
+      case 'isalpha': return recv.length>0 && /^[A-Za-zА-Яа-я]+$/.test(recv);
+      case 'isalnum': return recv.length>0 && /^[A-Za-zА-Яа-я0-9]+$/.test(recv);
+      case 'isspace': return recv.length>0 && /^\s+$/.test(recv);
+      case 'isupper': return recv===recv.toUpperCase() && /[A-Za-zА-Яа-я]/.test(recv);
+      case 'islower': return recv===recv.toLowerCase() && /[A-Za-zА-Яа-я]/.test(recv);
+      case 'zfill': { const w=args[0]; if(recv.length>=w)return recv; return (recv.startsWith('-')?'-'+'0'.repeat(w-recv.length):'0'.repeat(w-recv.length)+recv); }
+      case 'ljust': { const w=args[0]; return recv.length>=w?recv:recv+' '.repeat(w-recv.length); }
+      case 'rjust': { const w=args[0]; return recv.length>=w?recv:' '.repeat(w-recv.length)+recv; }
+      case 'center': { const w=args[0]; if(recv.length>=w)return recv; const pad=w-recv.length,l=Math.floor(pad/2); return ' '.repeat(l)+recv+' '.repeat(pad-l); }
+      case 'format': { let s=recv; let ai=0; const named={}; for(const k in kwargs)named[k]=kwargs[k]; s=s.replace(/\{([^{}]*)\}/g, function(_,key){ if(key==='')return pyStr(args[ai++]); if(/^\d+$/.test(key))return pyStr(args[parseInt(key,10)]); if(key in named)return pyStr(named[key]); return '{'+key+'}'; }); return s; }
+      case 'join': { const arr=iterableOf(args[0]); return arr.map(pyStr).join(recv); }
+      case 'splitlines': return recv.split(/\n/);
+      default: bad();
+    }
+  }
+  if(Array.isArray(recv)){
+    switch(name){
+      case 'append': recv.push(args[0]); return null;
+      case 'extend': { iterableOf(args[0]).forEach(x=>recv.push(x)); return null; }
+      case 'insert': { let i=args[0]; if(i<0)i+=recv.length; recv.splice(i,0,args[1]); return null; }
+      case 'remove': { const i=recv.findIndex(x=>pyEquals(x,args[0])); if(i<0)throw PyError('ValueError: list.remove(x): x not in list'); recv.splice(i,1); return null; }
+      case 'pop': { if(!recv.length)throw PyError('IndexError: pop from empty list'); const i=args.length?normIndex(args[0],recv.length):recv.length-1; if(i<0||i>=recv.length)throw PyError('IndexError: pop index out of range'); return recv.splice(i,1)[0]; }
+      case 'clear': recv.length=0; return null;
+      case 'index': { const i=recv.findIndex(x=>pyEquals(x,args[0])); if(i<0)throw PyError('ValueError: '+pyRepr(args[0])+' is not in list'); return i; }
+      case 'count': return recv.filter(x=>pyEquals(x,args[0])).length;
+      case 'sort': { recv.sort((a,b)=>{ const r=recv.length; if(pyLess(a,b))return -1; if(pyLess(b,a))return 1; return 0; }); return null; }
+      case 'reverse': recv.reverse(); return null;
+      case 'copy': return recv.slice();
+      default: bad();
+    }
+  }
+  if(recv instanceof PyTuple){
+    switch(name){
+      case 'index': { const i=recv.items.findIndex(x=>pyEquals(x,args[0])); if(i<0)throw PyError('ValueError: tuple.index(x): x not in tuple'); return i; }
+      case 'count': return recv.items.filter(x=>pyEquals(x,args[0])).length;
+      default: bad();
+    }
+  }
+  if(recv instanceof PyDict){
+    switch(name){
+      case 'keys': return recv.keys();
+      case 'values': return recv.values();
+      case 'items': return recv.entries().map(e=>new PyTuple([e[0],e[1]]));
+      case 'get': { if(recv.has(args[0]))return recv.get(args[0]); return args.length>1?args[1]:null; }
+      case 'pop': { if(!recv.has(args[0])){ if(args.length>1)return args[1]; throw PyError('KeyError: '+pyRepr(args[0])); } const v=recv.get(args[0]); recv.del(args[0]); return v; }
+      case 'setdefault': { if(!recv.has(args[0])) recv.set(args[0], args.length>1?args[1]:null); return recv.get(args[0]); }
+      case 'update': { const other=args[0]; if(other instanceof PyDict) other.entries().forEach(e=>recv.set(e[0],e[1])); else if(Array.isArray(other)) other.forEach(p=>recv.set(p[0],p[1])); return null; }
+      case 'clear': recv.map.clear(); return null;
+      case 'copy': return recv.clone();
+      default: bad();
+    }
+  }
+  if(recv instanceof PySet){
+    switch(name){
+      case 'add': recv.add(args[0]); return null;
+      case 'remove': { if(!recv.has(args[0]))throw PyError('KeyError: '+pyRepr(args[0])); recv.del(args[0]); return null; }
+      case 'discard': recv.del(args[0]); return null;
+      case 'pop': { const v=recv.values()[0]; recv.del(v); return v; }
+      case 'clear': recv.arr=[]; recv.set.clear(); return null;
+      case 'union': { const s=new PySet(); recv.values().forEach(x=>s.add(x)); iterableOf(args[0]).forEach(x=>s.add(x)); return s; }
+      case 'intersection': { const s=new PySet(); const other=args[0]; recv.values().forEach(x=>{ if(contains(other,x))s.add(x); }); return s; }
+      case 'difference': { const s=new PySet(); recv.values().forEach(x=>{ if(!contains(args[0],x))s.add(x); }); return s; }
+      case 'issubset': { const other=args[0]; return recv.values().every(x=>contains(other,x)); }
+      case 'issuperset': { const other=iterableOf(args[0]); return other.every(x=>recv.has(x)); }
+      case 'copy': { const s=new PySet(); recv.values().forEach(x=>s.add(x)); return s; }
+      default: bad();
+    }
+  }
+  bad();
+}
+function stripChars(s, chars, mode){
+  const set=new Set(chars.split(''));
+  let a=0,b=s.length;
+  if(mode!=='right'){ while(a<b&&set.has(s[a]))a++; }
+  if(mode!=='left'){ while(b>a&&set.has(s[b-1]))b--; }
+  return s.slice(a,b);
+}
+
+/* ------------------------- ВСТРОЕННЫЕ ФУНКЦИИ ------------------------- */
+function B(name, fn){ return new PyBuiltin(name, fn); }
+function installBuiltins(env, ctx){
+  const bi={};
+  bi['print']=B('print',(args,kw,ctx)=>{
+    const sep=('sep' in kw)?kw.sep:' ';
+    const end=('end' in kw)?kw.end:'\n';
+    const text=args.map(pyStr).join(sep);
+    ctx.out(text+end);
+    return null;
+  });
+  bi['input']=B('input',(args,kw,ctx)=>{
+    if(args.length) ctx.out(pyStr(args[0]));
+    if(ctx.inputQueue.length) return ctx.inputQueue.shift();
+    if(ctx.allowPrompt && typeof window!=='undefined'){
+      const r=window.prompt('Ввод (input):','');
+      return r===null?'':r;
+    }
+    throw PyError('EOFError: EOF when reading a line');
+  });
+  bi['len']=B('len',(args)=>{ const v=args[0];
+    if(typeof v==='string')return v.length;
+    if(Array.isArray(v))return v.length;
+    if(v instanceof PyTuple)return v.items.length;
+    if(v instanceof PyDict)return v.entries().length;
+    if(v instanceof PySet)return v.values().length;
+    if(v instanceof PyRange)return v.toArray().length;
+    throw PyError("TypeError: object of type '"+pyTypeName(v)+"' has no len()");
+  });
+  bi['range']=B('range',(args)=>{
+    if(args.length===1) return new PyRange(0,args[0],1);
+    if(args.length===2) return new PyRange(args[0],args[1],1);
+    return new PyRange(args[0],args[1],args[2]);
+  });
+  bi['int']=B('int',(args)=>{ const v=args[0]; if(v===undefined)return 0;
+    if(typeof v==='boolean')return v?1:0;
+    if(typeof v==='number')return Math.trunc(v);
+    if(typeof v==='string'){ const base=args.length>1?args[1]:10; const t=v.trim(); const n=parseInt(t,base); if(isNaN(n))throw PyError("ValueError: invalid literal for int() with base "+base+": '"+v+"'"); return n; }
+    throw PyError("TypeError: int() argument must be a string or a number"); });
+  bi['float']=B('float',(args)=>{ const v=args[0]; if(v===undefined)return 0.0;
+    if(typeof v==='number')return v; if(typeof v==='boolean')return v?1:0;
+    if(typeof v==='string'){ const n=parseFloat(v.trim().replace(',','.')); if(isNaN(n))throw PyError("ValueError: could not convert string to float: '"+v+"'"); return n; }
+    throw PyError('TypeError: float() argument must be a number or a string'); });
+  bi['str']=B('str',(args)=> pyStr(args[0]));
+  bi['bool']=B('bool',(args)=> pyTruthy(args[0]));
+  bi['repr']=B('repr',(args)=> pyRepr(args[0]));
+  bi['list']=B('list',(args)=>{ if(!args.length)return []; const v=args[0]; if(Array.isArray(v))return v.slice(); return iterableOf(v); });
+  bi['tuple']=B('tuple',(args)=>{ if(!args.length)return new PyTuple([]); return new PyTuple(iterableOf(args[0])); });
+  bi['dict']=B('dict',(args,kw)=>{ const d=new PyDict(); if(args.length){ const v=args[0]; if(v instanceof PyDict) v.entries().forEach(e=>d.set(e[0],e[1])); else if(Array.isArray(v)) v.forEach(p=>d.set(p[0],p[1])); } for(const k in kw) d.set(k,kw[k]); return d; });
+  bi['set']=B('set',(args)=>{ const s=new PySet(); if(args.length) iterableOf(args[0]).forEach(x=>s.add(x)); return s; });
+  bi['sum']=B('sum',(args)=>{ const arr=iterableOf(args[0]); const start=args.length>1?args[1]:0; let t=start; arr.forEach(x=>t=binop('+',t,x)); return t; });
+  bi['min']=B('min',(args)=>{ const arr=args.length===1?iterableOf(args[0]):args; if(!arr.length)throw PyError('ValueError: min() arg is an empty sequence'); let m=arr[0]; for(const x of arr) if(pyLess(x,m))m=x; return m; });
+  bi['max']=B('max',(args)=>{ const arr=args.length===1?iterableOf(args[0]):args; if(!arr.length)throw PyError('ValueError: max() arg is an empty sequence'); let m=arr[0]; for(const x of arr) if(pyLess(m,x))m=x; return m; });
+  bi['abs']=B('abs',(args)=>{ const v=args[0]; if(typeof v==='number')return Math.abs(v); throw PyError("TypeError: bad operand type for abs(): '"+pyTypeName(v)+"'"); });
+  bi['round']=B('round',(args)=>{ const v=args[0]; const nd=args.length>1?args[1]:0; const f=Math.pow(10,nd); const r=Math.round((v*f)+ (v<0?-1e-9:1e-9))/f; return nd<=0? r : r; });
+  bi['pow']=B('pow',(args)=> Math.pow(args[0],args[1]));
+  bi['sorted']=B('sorted',(args,kw)=>{ const arr=iterableOf(args[0]); const rev=!!kw.reverse; arr.sort((a,b)=>{ if(pyLess(a,b))return -1; if(pyLess(b,a))return 1; return 0; }); if(rev)arr.reverse(); return arr; });
+  bi['reversed']=B('reversed',(args)=> iterableOf(args[0]).slice().reverse());
+  bi['enumerate']=B('enumerate',(args)=>{ const start=args.length>1?args[1]:0; return iterableOf(args[0]).map((v,i)=>new PyTuple([i+start,v])); });
+  bi['zip']=B('zip',(args)=>{ const lists=args.map(iterableOf); const len=Math.min.apply(null,lists.map(l=>l.length)); const out=[]; for(let i=0;i<len;i++) out.push(new PyTuple(lists.map(l=>l[i]))); return out; });
+  bi['type']=B('type',(args)=>{ const v=args[0]; if(v instanceof PyInstance) return v.cls; return new PyClass(pyTypeName(v),[],new Map()); });
+  bi['isinstance']=B('isinstance',(args)=>{ const v=args[0]; const t=args[1]; if(t instanceof PyClass){ if(v instanceof PyInstance){ let c=v.cls; while(c){ if(c===t)return true; c=c.bases[0]; } return false; } return pyTypeName(v)===t.name; } if(Array.isArray(t)) return t.some(x=>pyTruthy(callValue(bi['isinstance'],[v,x],{},null))); return false; });
+  bi['ord']=B('ord',(args)=>{ const s=args[0]; if(typeof s!=='string'||s.length!==1)throw PyError('TypeError: ord() expected a character'); return s.charCodeAt(0); });
+  bi['chr']=B('chr',(args)=> String.fromCharCode(args[0]));
+  bi['hex']=B('hex',(args)=> (args[0]<0?'-':'')+'0x'+Math.abs(args[0]).toString(16));
+  bi['bin']=B('bin',(args)=> (args[0]<0?'-':'')+'0b'+Math.abs(args[0]).toString(2));
+  bi['oct']=B('oct',(args)=> (args[0]<0?'-':'')+'0o'+Math.abs(args[0]).toString(8));
+  bi['any']=B('any',(args)=>{ const arr=iterableOf(args[0]); return arr.some(pyTruthy); });
+  bi['all']=B('all',(args)=>{ const arr=iterableOf(args[0]); return arr.every(pyTruthy); });
+  bi['map']=B('map',(args)=>{ const f=args[0]; const arr=iterableOf(args[1]); return arr.map(x=>callValue(f,[x],{},null)); });
+  bi['filter']=B('filter',(args)=>{ const f=args[0]; const arr=iterableOf(args[1]); return arr.filter(x=>pyTruthy(callValue(f,[x],{},null))); });
+  bi['divmod']=B('divmod',(args)=> new PyTuple([Math.floor(args[0]/args[1]), ((args[0]%args[1])+args[1])%args[1]]));
+  bi['format']=B('format',(args)=> args.length>1?applyFormat(args[0], args[1]):pyStr(args[0]));
+  for(const k in bi) env.setLocal(k, bi[k]);
+  PY_NATIVE_KINDS['args']=1;
+  for(const nm of EXC_NAMES){
+    env.setLocal(nm, new PyBuiltin(nm, function(args){ const inst=new PyInstance(new PyExc(nm)); inst.attrs.set('args', new PyTuple(args)); return inst; }));
+  }
+  env.setLocal('__name__', '__main__');
+}
+
+/* ------------------------- МОДУЛИ (заглушки) ------------------------- */
+const _unavailable = (mod)=>{ throw PyError("ImportError: модуль '"+mod+"' недоступен в офлайн-версии PyCamp"); };
+function loadModule(name){
+  switch(name){
+    case 'math': return new PyModule('math',{
+      pi:Math.PI, e:Math.E, tau:2*Math.PI, inf:Infinity,
+      sqrt:B('sqrt',a=>Math.sqrt(a[0])), floor:B('floor',a=>Math.floor(a[0])), ceil:B('ceil',a=>Math.ceil(a[0])),
+      fabs:B('fabs',a=>Math.abs(a[0])), pow:B('pow',a=>Math.pow(a[0],a[1])), factorial:B('factorial',a=>{ let n=a[0],r=1; for(let i=2;i<=n;i++)r*=i; return r; }),
+      gcd:B('gcd',a=>{ let x=Math.abs(a[0]),y=Math.abs(a[1]); while(y){ [x,y]=[y,x%y]; } return x; }),
+      sin:B('sin',a=>Math.sin(a[0])), cos:B('cos',a=>Math.cos(a[0])), tan:B('tan',a=>Math.tan(a[0])),
+      log:B('log',a=>a.length>1?Math.log(a[0])/Math.log(a[1]):Math.log(a[0])), log10:B('log10',a=>Math.log10(a[0])),
+      exp:B('exp',a=>Math.exp(a[0])), degrees:B('degrees',a=>a[0]*180/Math.PI), radians:B('radians',a=>a[0]*Math.PI/180)
+    });
+    case 'random': { const mod=new PyModule('random',{});
+      const rnd=()=>Math.random();
+      const randInt=(a,b)=>Math.floor(rnd()*(b-a+1))+a;
+      const choice=(arr)=>arr[Math.floor(rnd()*arr.length)];
+      mod.members['random']=B('random',()=>rnd());
+      mod.members['randint']=B('randint',a=>randInt(a[0],a[1]));
+      mod.members['randrange']=B('randrange',a=> a.length===1?randInt(0,a[0]-1):randInt(a[0],a[1]-1));
+      mod.members['choice']=B('choice',a=>choice(iterableOf(a[0])));
+      mod.members['shuffle']=B('shuffle',a=>{ const arr=a[0]; for(let i=arr.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return null; });
+      mod.members['sample']=B('sample',a=>{ const arr=iterableOf(a[0]).slice(); const k=a[1]; const out=[]; for(let i=0;i<k;i++){ const j=Math.floor(rnd()*arr.length); out.push(arr.splice(j,1)[0]); } return out; });
+      mod.members['seed']=B('seed',()=>null);
+      mod.members['uniform']=B('uniform',a=>a[0]+rnd()*(a[1]-a[0]));
+      return mod; }
+    case 'time': return new PyModule('time',{
+      time:B('time',()=>Date.now()/1000), sleep:B('sleep',()=>null), perf_counter:B('perf_counter',()=>Date.now()/1000)
+    });
+    case 'statistics': return new PyModule('statistics',{
+      mean:B('mean',a=>{ const arr=iterableOf(a[0]); return arr.reduce((s,x)=>s+x,0)/arr.length; }),
+      median:B('median',a=>{ const arr=iterableOf(a[0]).slice().sort((x,y)=>x-y); const m=Math.floor(arr.length/2); return arr.length%2?arr[m]:(arr[m-1]+arr[m])/2; }),
+      mode:B('mode',a=>{ const arr=iterableOf(a[0]); const c={}; let best=arr[0],bc=0; arr.forEach(x=>{ c[x]=(c[x]||0)+1; if(c[x]>bc){bc=c[x];best=x;} }); return best; }),
+      stdev:B('stdev',a=>{ const arr=iterableOf(a[0]); const m=arr.reduce((s,x)=>s+x,0)/arr.length; return Math.sqrt(arr.reduce((s,x)=>s+Math.pow(x-m,2),0)/(arr.length-1)); })
+    });
+    case 'string': return new PyModule('string',{
+      ascii_lowercase:'abcdefghijklmnopqrstuvwxyz', ascii_uppercase:'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+      ascii_letters:'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', digits:'0123456789',
+      punctuation:'!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~', whitespace:' \t\n\r\x0b\x0c'
+    });
+    case 'os': case 'sys': return new PyModule(name,{ getcwd:B('getcwd',()=>'/'), exit:B('exit',()=>{ throw PyError('SystemExit'); }), platform:'pycamp', version:'PyCamp 1.0', argv:[] });
+    case 'json': return new PyModule('json',{
+      dumps:B('dumps',a=>jsonFromPy(a[0],false)), loads:B('loads',a=>pyFromJson(JSON.parse(a[0])))
+    });
+    case 're': return new PyModule('re',{
+      search:B('search',a=> reFind(a[0], a[1])), findall:B('findall',a=> { const rx=new RegExp(a[0],'g'); const out=[]; let m; while((m=rx.exec(a[1]))!==null) out.push(m[1]!==undefined?m[1]:m[0]); return out; }),
+      sub:B('sub',a=> a[1].replace(new RegExp(a[0],'g'), a[2]))
+    });
+    case 'collections': return new PyModule('collections',{
+      Counter:B('Counter',a=>{ const d=new PyDict(); iterableOf(a[0]).forEach(x=>d.set(x,(d.has(x)?d.get(x):0)+1)); return d; }),
+      deque:B('deque',a=> iterableOf(a[0]).slice())
+    });
+    case 'datetime': return new PyModule('datetime',{ datetime:new PyClass('datetime',[],new Map()), date:new PyClass('date',[],new Map()) });
+    default: _unavailable(name);
+  }
+}
+function jsonFromPy(v, isKey){ if(v===null)return 'null'; if(v===true)return 'true'; if(v===false)return 'false'; if(typeof v==='number')return String(v); if(typeof v==='string')return JSON.stringify(v); if(Array.isArray(v))return '['+v.map(x=>jsonFromPy(x)).join(', ')+']'; if(v instanceof PyTuple)return '['+v.items.map(x=>jsonFromPy(x)).join(', ')+']'; if(v instanceof PyDict)return '{'+v.entries().map(e=>JSON.stringify(pyStr(e[0]))+': '+jsonFromPy(e[1])).join(', ')+'}'; return JSON.stringify(pyStr(v)); }
+function pyFromJson(v){ if(v===null)return null; if(typeof v==='boolean')return v; if(typeof v==='number')return v; if(typeof v==='string')return v; if(Array.isArray(v))return v.map(pyFromJson); if(typeof v==='object'){ const d=new PyDict(); for(const k in v) d.set(k, pyFromJson(v[k])); return d; } return null; }
+function reFind(pat, s){ const m=new RegExp(pat).exec(s); return m?m[0]:null; }
+
+/* =========================================================================
+   2. ЗАПУСК ПРОГРАММ И ПРОВЕРКА ЗАДАНИЙ
+   ========================================================================= */
+function fmtErr(e){
+  if(e && e.isPy) return e.pyMsg;
+  if(e && e.__ret) return 'SyntaxError: return outside function';
+  if(e && e.message) return e.message;
+  return String(e);
+}
+function stubCtx(){ return { out:function(){}, inputQueue:[], allowPrompt:false }; }
+function runPython(src, opts){
+  opts=opts||{};
+  const buf=[];
+  const ctx={
+    out:function(t){ buf.push(t); if(buf.join('').length>500000) throw PyError('RuntimeError: слишком большой объём вывода (возможен бесконечный цикл)'); },
+    inputQueue:(opts.inputs||[]).slice(),
+    allowPrompt: opts.allowPrompt!==false
+  };
+  let ast, env;
+  try{
+    const toks=tokenize(src);
+    ast=new Parser(toks).parseProgram();
+  }catch(e){ return {output:'', error:fmtErr(e), env:null, phase:'parse'}; }
+  try{ env=runProgram(ast, ctx); }
+  catch(e){
+    if(e && e.__ret){ /* top-level return — игнорируем */ }
+    else return {output:buf.join(''), error:fmtErr(e), env:null, phase:'run'};
+  }
+  return {output:buf.join(''), error:null, env:env, phase:'ok'};
+}
+function normOut(s){
+  return String(s==null?'':s).replace(/\r\n?/g,'\n').split('\n').map(l=>l.replace(/[ \t]+$/,'')).join('\n').replace(/\n+$/,'');
+}
+function pyValFromJS(v){
+  if(v===null||v===undefined) return null;
+  if(Array.isArray(v)) return v.map(pyValFromJS);
+  if(typeof v==='object'){ const d=new PyDict(); for(const k in v) d.set(k, pyValFromJS(v[k])); return d; }
+  return v;
+}
+function evalChecks(lesson, src){
+  const checks=(lesson.task && lesson.task.checks) || [];
+  const results=[];
+  for(const c of checks){
+    if(c.type==='code'){
+      const re=new RegExp(c.regex, c.flags||'');
+      const okAll=re.test(src);
+      const ok = c.negate ? !okAll : okAll;
+      results.push({ok:ok, label:c.label||'Проверка кода', detail: ok?'':(c.hint||'Код не соответствует требованию задания.')});
+      continue;
+    }
+    const r=runPython(src, {inputs:c.inputs||[], allowPrompt:false});
+    if(c.type==='output'){
+      const got=normOut(r.output), exp=normOut(c.expected);
+      let ok = got===exp && !r.error;
+      let detail='';
+      if(!ok){ detail = r.error ? ('Ошибка выполнения:\n'+r.error) : ('Ожидалось:\n'+(exp||'(пусто)')+'\n\nПолучено:\n'+(got||'(пусто)')); }
+      results.push({ok:ok, label:c.label||'Вывод программы', detail:detail});
+    } else if(c.type==='var'){
+      if(r.error){ results.push({ok:false, label:c.label||('Переменная '+c.name), detail:'Ошибка выполнения:\n'+r.error}); continue; }
+      if(!r.env || !r.env.vars.has(c.name)){ results.push({ok:false, label:c.label||('Переменная '+c.name), detail:'Переменная '+c.name+' не найдена.'}); continue; }
+      const actual=pyRepr(r.env.vars.get(c.name));
+      const ok=actual===c.expected;
+      results.push({ok:ok, label:c.label||('Переменная '+c.name), detail: ok?'':('Ожидалось: '+c.name+' = '+c.expected+'\nПолучено: '+c.name+' = '+actual)});
+    } else if(c.type==='func'){
+      if(r.error){ results.push({ok:false, label:c.label||('Функция '+c.name), detail:'Ошибка выполнения:\n'+r.error}); continue; }
+      if(!r.env || !r.env.vars.has(c.name)){ results.push({ok:false, label:c.label||('Функция '+c.name), detail:'Функция '+c.name+' не найдена.'}); continue; }
+      const fn=r.env.vars.get(c.name);
+      let actual, err=null;
+      try{ actual=pyRepr(callValue(fn, (c.args||[]).map(pyValFromJS), {}, stubCtx())); }catch(e){ err=fmtErr(e); }
+      const ok = !err && actual===c.expected;
+      results.push({ok:ok, label:c.label||('Функция '+c.name), detail: ok?'':(err?('Ошибка вызова: '+err):('Ожидалось: '+c.name+'('+(c.args||[]).join(', ')+') → '+c.expected+'\nПолучено: '+actual))});
+    }
+  }
+  return results;
+}
+
+/* =========================================================================
+   3. СОДЕРЖИМОЕ КУРСА (на русском)
+   Модель урока:
+   { id, title, theory:<html>, starter:<code>, task:{ text, hint, solution, checks:[...] } }
+   ========================================================================= */
+const COURSE = [
+/* ---------------------------------- МОДУЛЬ 1 ---------------------------------- */
+{ id:'m1', icon:'🚀', title:'Модуль 1. Введение в Python', lessons:[
+  { id:'m1l1', title:'1.1. Что такое Python',
+    theory:`<p><b>Python</b> — это язык программирования, который читается почти как обычный английский. Он используется для создания сайтов, анализа данных, машинного обучения, автоматизации и многого другого.</p>
+<h3>Первая программа</h3>
+<p>Традиционно первая программа выводит приветствие. За это отвечает функция <code>print()</code>:</p>
+<pre><code>print("Привет, мир!")</code></pre>
+<p>Всё, что находится внутри кавычек, называется <b>строкой</b> и выводится на экран.</p>
+<div class="tip">💡 Строки можно писать и в одинарных кавычках: <code>print('Привет')</code>.</div>`,
+    starter:'# Напишите первую программу\nprint("Привет, мир!")\n',
+    task:{ text:`<p>Выведите на экран строку <code>Я изучаю Python</code>.</p>`,
+      hint:'Используйте функцию print() и не забудьте кавычки.',
+      solution:'print("Я изучаю Python")',
+      checks:[ {type:'output', expected:'Я изучаю Python', label:'Программа выводит приветствие'},
+               {type:'code', regex:'print\\s*\\(', label:'Использована функция print()'} ] } },
+
+  { id:'m1l2', title:'1.2. Комментарии',
+    theory:`<p><b>Комментарии</b> — это заметки для людей. Python их игнорирует.</p>
+<pre><code># Это комментарий\nprint("Код работает")  # и это тоже</code></pre>
+<p>Комментарии начинаются с символа <code>#</code> и продолжаются до конца строки.</p>
+<div class="tip">💡 Хороший комментарий объясняет <i>зачем</i>, а не <i>что</i> делает код.</div>`,
+    starter:'# Эта строка — комментарий\nprint("Программа запущена")\n',
+    task:{ text:`<p>Создайте комментарий со словом <code>задача</code> и выведите число <code>42</code>.</p>`,
+      hint:'Затем вызовите print(42).',
+      solution:'# задача: вывести число\nprint(42)',
+      checks:[ {type:'output', expected:'42', label:'Выведено число 42'},
+               {type:'code', regex:'#.*задача', label:'Есть комментарий со словом «задача»'} ] } },
+
+  { id:'m1l3', title:'1.3. print() и его параметры',
+    theory:`<p>Функция <code>print()</code> умеет выводить несколько значений и управлять разделителем.</p>
+<pre><code>print("a", "b", "c")        # a b c\nprint("a", "b", sep="-")    # a-b\nprint("Строка", end=" ")\nprint("продолжение")        # Строка продолжение</code></pre>
+<ul><li><code>sep</code> — разделитель между значениями (по умолчанию пробел).</li>
+<li><code>end</code> — что выводить в конце (по умолчанию перенос строки).</li></ul>`,
+    starter:'print("Итого:", sep="-", end="")\nprint(100 + 50)\n',
+    task:{ text:`<p>Выведите три слова <code>Python</code>, <code>это</code>, <code>просто</code> через дефис, используя один <code>print()</code> с параметром <code>sep</code>.</p>`,
+      hint:'print("Python", "это", "просто", sep="-")',
+      solution:'print("Python", "это", "просто", sep="-")',
+      checks:[ {type:'output', expected:'Python-это-просто', label:'Слова разделены дефисом'} ] } },
+]},
+
+/* ---------------------------------- МОДУЛЬ 2 ---------------------------------- */
+{ id:'m2', icon:'📦', title:'Модуль 2. Переменные и типы данных', lessons:[
+  { id:'m2l1', title:'2.1. Переменные',
+    theory:`<p><b>Переменная</b> — это имя, которое хранит значение. Присваивание выполняется знаком <code>=</code>.</p>
+<pre><code>name = "Анна"\nage = 25\nprint(name)\nprint(age)</code></pre>
+<p>Имя переменной может содержать буквы, цифры и <code>_</code>, но не может начинаться с цифры.</p>
+<div class="warn">⚠️ Регистр важен: <code>Age</code> и <code>age</code> — разные переменные.</div>`,
+    starter:'city = "Москва"\n# Выведите значение переменной\n',
+    task:{ text:`<p>Создайте переменную <code>language</code> со значением <code>"Python"</code> и выведите её.</p>`,
+      hint:'language = "Python", затем print(language)',
+      solution:'language = "Python"\nprint(language)',
+      checks:[ {type:'output', expected:'Python', label:'Выведено значение переменной'},
+               {type:'var', name:'language', expected:'"Python"', label:'Переменная language равна "Python"'} ] } },
+
+  { id:'m2l2', title:'2.2. Числа: int и float',
+    theory:`<p>В Python есть два основных числовых типа:</p>
+<ul><li><code>int</code> — целые числа: <code>1</code>, <code>-7</code>, <code>2024</code></li>
+<li><code>float</code> — дробные числа: <code>3.14</code>, <code>-0.5</code></li></ul>
+<pre><code>a = 10\nb = 2.5\nprint(a + b)   # 12.5\nprint(type(a)) # <class 'int'></code></pre>
+<p>Функция <code>type()</code> показывает тип значения.</p>`,
+    starter:'x = 7\ny = 2\n# Разделите x на y\n',
+    task:{ text:`<p>Создайте переменную <code>result</code>, равную <code>10 / 4</code>, и выведите её.</p>`,
+      hint:'10 / 4 даёт 2.5 (float)',
+      solution:'result = 10 / 4\nprint(result)',
+      checks:[ {type:'output', expected:'2.5', label:'Выведено 2.5'},
+               {type:'var', name:'result', expected:'2.5', label:'result — дробное число'} ] } },
+
+  { id:'m2l3', title:'2.3. Преобразование типов',
+    theory:`<p>Иногда нужно перевести значение из одного типа в другой:</p>
+<pre><code>age = "25"              # это строка\nnumber = int(age)       # теперь число\nprint(number + 5)       # 30\n\nprice = 9.99\nprint(str(price) + " руб.")  # 9.99 руб.\nprint(int(price))            # 9</code></pre>
+<ul><li><code>int()</code> — в целое</li><li><code>float()</code> — в дробное</li><li><code>str()</code> — в строку</li></ul>`,
+    starter:'text = "100"\n# Преобразуйте и прибавьте 1\n',
+    task:{ text:`<p>Преобразуйте строку <code>"7"</code> в число, прибавьте <code>3</code> и выведите результат.</p>`,
+      hint:'int("7") + 3',
+      solution:'number = int("7")\nprint(number + 3)',
+      checks:[ {type:'output', expected:'10', label:'Получено число 10'} ] } },
+
+  { id:'m2l4', title:'2.4. Строки и f-строки',
+    theory:`<p>Строки можно склеивать оператором <code>+</code>, но удобнее использовать <b>f-строки</b> — они подставляют значения прямо в текст.</p>
+<pre><code>name = "Иван"\nage = 30\nprint(f"Меня зовут {name}, мне {age} лет")\n# Меня зовут Иван, мне 30 лет</code></pre>
+<p>Перед кавычками ставится буква <code>f</code>, а переменные — в фигурных скобках <code>{ }</code>.</p>`,
+    starter:'product = "ноутбук"\nprice = 55000\n# Соберите строку через f-строку\n',
+    task:{ text:`<p>С помощью f-строки выведите текст: <code>Товар: ноутбук, цена: 55000</code></p>`,
+      hint:'f"Товар: {product}, цена: {price}"',
+      solution:'product = "ноутбук"\nprice = 55000\nprint(f"Товар: {product}, цена: {price}")',
+      checks:[ {type:'output', expected:'Товар: ноутбук, цена: 55000', label:'f-строка собрана верно'},
+               {type:'code', regex:'f["\\\']', label:'Использована f-строка'} ] } },
+]},
+/* ---------------------------------- МОДУЛЬ 3 ---------------------------------- */
+{ id:'m3', icon:'➗', title:'Модуль 3. Операторы и ввод данных', lessons:[
+  { id:'m3l1', title:'3.1. Арифметические операторы',
+    theory:`<p>Python умеет выполнять все привычные математические операции:</p>
+<pre><code>a = 17\nb = 5\nprint(a + b)   # 22   сложение\nprint(a - b)   # 12   вычитание\nprint(a * b)   # 85   умножение\nprint(a / b)   # 3.4  деление (всегда float)\nprint(a // b)  # 3    целочисленное деление\nprint(a % b)   # 2    остаток от деления\nprint(a ** b)  # степень</code></pre>
+<div class="tip">💡 <code>%</code> (остаток) часто используют, чтобы проверить чётность: <code>n % 2 == 0</code>.</div>`,
+    starter:'a = 17\nb = 5\n# Найдите остаток от деления a на b\n',
+    task:{ text:`<p>Создайте переменную <code>remainder</code>, равную остатку от деления <code>17</code> на <code>5</code>, и выведите её.</p>`,
+      hint:'Оператор остатка — это %',
+      solution:'remainder = 17 % 5\nprint(remainder)',
+      checks:[ {type:'output', expected:'2', label:'Остаток равен 2'},
+               {type:'var', name:'remainder', expected:'2', label:'remainder = 2'} ] } },
+
+  { id:'m3l2', title:'3.2. Операторы сравнения и логики',
+    theory:`<p><b>Сравнение</b> возвращает <code>True</code> или <code>False</code>:</p>
+<pre><code>print(5 == 5)   # True  равно\nprint(5 != 3)   # True  не равно\nprint(5 > 2)    # True  больше\nprint(5 <= 2)   # False меньше или равно</code></pre>
+<p><b>Логические операторы</b> объединяют условия:</p>
+<pre><code>age = 20\nprint(age >= 18 and age < 65)  # True\nprint(age < 10 or age > 100)    # False\nprint(not True)                 # False</code></pre>
+<ul><li><code>and</code> — истинно, если верны оба условия</li><li><code>or</code> — истинно, если верно хотя бы одно</li><li><code>not</code> — отрицание</li></ul>`,
+    starter:'age = 20\n# Проверьте: возраст от 18 до 65\n',
+    task:{ text:`<p>Выведите результат проверки: <code>age</code> не меньше <code>18</code> И меньше <code>65</code>.</p>`,
+      hint:'print(age >= 18 and age < 65)',
+      solution:'age = 20\nprint(age >= 18 and age < 65)',
+      checks:[ {type:'output', expected:'True', label:'Условие истинно'} ] } },
+
+  { id:'m3l3', title:'3.3. Ввод данных: input()',
+    theory:`<p>Функция <code>input()</code> читает то, что вводит пользователь. Важно: она всегда возвращает <b>строку</b>.</p>
+<pre><code>name = input()\nprint("Привет, " + name)</code></pre>
+<p>Чтобы получить число, результат нужно преобразовать:</p>
+<pre><code>number = int(input())\nprint(number * 2)</code></pre>`,
+    starter:'name = input()\nprint("Привет, " + name)\n',
+    task:{ text:`<p>Прочитайте имя с помощью <code>input()</code> и выведите <code>Привет, ИМЯ</code>. При проверке будет введено <code>Мир</code>.</p>`,
+      hint:'name = input(), затем print("Привет, " + name)',
+      solution:'name = input()\nprint("Привет, " + name)',
+      checks:[ {type:'output', inputs:['Мир'], expected:'Привет, Мир', label:'Приветствие с введённым именем'},
+               {type:'code', regex:'input\\s*\\(', label:'Использована функция input()'} ] } },
+]},
+
+/* ---------------------------------- МОДУЛЬ 4 ---------------------------------- */
+{ id:'m4', icon:'🔀', title:'Модуль 4. Условия (ветвление)', lessons:[
+  { id:'m4l1', title:'4.1. Оператор if',
+    theory:`<p><b>if</b> выполняет код, только если условие истинно. Обратите внимание на двоеточие <code>:</code> и <b>отступ</b> в 4 пробела.</p>
+<pre><code>age = 18\nif age >= 18:\n    print("Доступ разрешён")</code></pre>
+<div class="warn">⚠️ Отступы в Python — часть синтаксиса. Отступ показывает, что код «внутри» if.</div>`,
+    starter:'number = 10\n# Выведите "Положительное", если число больше 0\n',
+    task:{ text:`<p>Если переменная <code>number</code> больше <code>0</code>, выведите <code>Положительное</code>.</p>`,
+      hint:'if number > 0: \\n    print("Положительное")',
+      solution:'number = 10\nif number > 0:\n    print("Положительное")',
+      checks:[ {type:'output', expected:'Положительное', label:'Ветка if сработала'},
+               {type:'code', regex:'if\\s+number\\s*>\\s*0\\s*:', label:'Использован оператор if'} ] } },
+
+  { id:'m4l2', title:'4.2. if / else',
+    theory:`<p><code>else</code> выполняется, когда условие ложно:</p>
+<pre><code>temperature = -5\nif temperature > 0:\n    print("Тепло")\nelse:\n    print("Холодно")</code></pre>`,
+    starter:'temperature = -5\n# Тепло или Холодно?\n',
+    task:{ text:`<p>Если <code>temperature</code> больше <code>0</code>, выведите <code>Тепло</code>, иначе — <code>Холодно</code>.</p>`,
+      hint:'Используйте конструкцию if/else.',
+      solution:'temperature = -5\nif temperature > 0:\n    print("Тепло")\nelse:\n    print("Холодно")',
+      checks:[ {type:'output', expected:'Холодно', label:'Сработала ветка else'} ] } },
+
+  { id:'m4l3', title:'4.3. Цепочка elif',
+    theory:`<p><code>elif</code> («else if») проверяет дополнительные условия по порядку. Сработает только <b>первое</b> подходящее.</p>
+<pre><code>score = 82\nif score >= 90:\n    print("Отлично")\nelif score >= 75:\n    print("Хорошо")\nelif score >= 60:\n    print("Средне")\nelse:\n    print("Нужно учиться")</code></pre>`,
+    starter:'score = 82\n# Оценка по баллам\n',
+    task:{ text:`<p>Выведите оценку: <code>5</code> при <code>score >= 90</code>, <code>4</code> при <code>>= 75</code>, <code>3</code> при <code>>= 60</code>, иначе <code>2</code>. При <code>score = 82</code> ожидается <code>4</code>.</p>`,
+      hint:'Используйте if / elif / elif / else.',
+      solution:'score = 82\nif score >= 90:\n    print("5")\nelif score >= 75:\n    print("4")\nelif score >= 60:\n    print("3")\nelse:\n    print("2")',
+      checks:[ {type:'output', expected:'4', label:'Оценка определена верно'},
+               {type:'code', regex:'elif', label:'Использован elif'} ] } },
+
+  { id:'m4l4', title:'4.4. Вложенные условия и логика',
+    theory:`<p>Условия можно вкладывать друг в друга и объединять логическими операторами:</p>
+<pre><code>has_ticket = True\nage = 15\nif has_ticket:\n    if age >= 18:\n        print("Проходите")\n    else:\n        print("Нужен взрослый")\nelse:\n    print("Купите билет")</code></pre>
+<p>То же самое короче:</p>
+<pre><code>if has_ticket and age >= 18:\n    print("Проходите")</code></pre>`,
+    starter:'logged_in = True\nis_admin = False\n# Проверьте доступ двумя условиями\n',
+    task:{ text:`<p>Выведите <code>Доступ разрешён</code>, если <code>logged_in</code> истинно И (<code>is_admin</code> истинно ИЛИ ...). Проще: выведите доступ при <code>logged_in and is_admin</code>, иначе <code>Доступ запрещён</code>. Здесь ожидается <code>Доступ запрещён</code>.</p>`,
+      hint:'if logged_in and is_admin: ... else: ...',
+      solution:'logged_in = True\nis_admin = False\nif logged_in and is_admin:\n    print("Доступ разрешён")\nelse:\n    print("Доступ запрещён")',
+      checks:[ {type:'output', expected:'Доступ запрещён', label:'Логика доступа верна'} ] } },
+]},
+/* ---------------------------------- МОДУЛЬ 5 ---------------------------------- */
+{ id:'m5', icon:'🔁', title:'Модуль 5. Циклы', lessons:[
+  { id:'m5l1', title:'5.1. Цикл for',
+    theory:`<p>Цикл <b>for</b> повторяет код для каждого элемента последовательности. Чаще всего используют с <code>range()</code>.</p>
+<pre><code>for i in range(5):\n    print(i)\n# 0 1 2 3 4\n\nfor letter in "abc":\n    print(letter)</code></pre>
+<p><code>range(n)</code> выдаёт числа от <code>0</code> до <code>n-1</code>. Формы: <code>range(start, stop, step)</code>.</p>`,
+    starter:'# Выведите числа от 1 до 5\n',
+    task:{ text:`<p>Используя цикл <code>for</code> и <code>range()</code>, выведите числа от <code>1</code> до <code>5</code> включительно, каждое с новой строки.</p>`,
+      hint:'for i in range(1, 6):',
+      solution:'for i in range(1, 6):\n    print(i)',
+      checks:[ {type:'output', expected:'1\n2\n3\n4\n5', label:'Числа 1–5 выведены'},
+               {type:'code', regex:'for\\s+\\w+\\s+in\\s+range', label:'Использован цикл for с range()'} ] } },
+
+  { id:'m5l2', title:'5.2. Накопление и суммирование',
+    theory:`<p>Внутри цикла можно накапливать результат:</p>
+<pre><code>total = 0\nfor i in range(1, 101):\n    total = total + i\nprint(total)   # 5050</code></pre>
+<p>Так же работает и <code>total += i</code> — короткая запись.</p>`,
+    starter:'total = 0\n# Сложите числа от 1 до 10\n',
+    task:{ text:`<p>Найдите сумму чисел от <code>1</code> до <code>10</code> и выведите результат (<code>55</code>).</p>`,
+      hint:'Заведите total = 0 и прибавляйте i в цикле.',
+      solution:'total = 0\nfor i in range(1, 11):\n    total += i\nprint(total)',
+      checks:[ {type:'output', expected:'55', label:'Сумма равна 55'},
+               {type:'var', name:'total', expected:'55', label:'Переменная total = 55'} ] } },
+
+  { id:'m5l3', title:'5.3. Цикл while',
+    theory:`<p><b>while</b> повторяется, пока условие истинно. Важно менять переменную, иначе цикл станет бесконечным!</p>
+<pre><code>i = 3\nwhile i > 0:\n    print(i)\n    i = i - 1\nprint("Поехали!")</code></pre>`,
+    starter:'i = 5\n# Обратный отсчёт до 1\n',
+    task:{ text:`<p>С помощью цикла <code>while</code> выведите числа от <code>3</code> до <code>1</code>, затем строку <code>Поехали!</code></p>`,
+      hint:'Уменьшайте i внутри цикла: i = i - 1',
+      solution:'i = 3\nwhile i > 0:\n    print(i)\n    i = i - 1\nprint("Поехали!")',
+      checks:[ {type:'output', expected:'3\n2\n1\nПоехали!', label:'Обратный отсчёт верен'} ] } },
+
+  { id:'m5l4', title:'5.4. break, continue, вложенные циклы',
+    theory:`<p>Управление циклом:</p>
+<ul><li><code>break</code> — прервать цикл</li><li><code>continue</code> — перейти к следующей итерации</li></ul>
+<pre><code>for i in range(1, 10):\n    if i == 5:\n        break\n    print(i)   # 1 2 3 4\n\nfor i in range(1, 6):\n    if i % 2 == 0:\n        continue\n    print(i)   # 1 3 5</code></pre>`,
+    starter:'# Выведите нечётные числа от 1 до 9\n',
+    task:{ text:`<p>Выведите только нечётные числа от <code>1</code> до <code>9</code>, используя <code>continue</code>.</p>`,
+      hint:'if i % 2 == 0: continue',
+      solution:'for i in range(1, 10):\n    if i % 2 == 0:\n        continue\n    print(i)',
+      checks:[ {type:'output', expected:'1\n3\n5\n7\n9', label:'Нечётные числа выведены'},
+               {type:'code', regex:'continue', label:'Использован continue'} ] } },
+]},
+
+/* ---------------------------------- МОДУЛЬ 6 ---------------------------------- */
+{ id:'m6', icon:'📋', title:'Модуль 6. Списки и кортежи', lessons:[
+  { id:'m6l1', title:'6.1. Списки: создание и индексы',
+    theory:`<p><b>Список</b> — упорядоченная коллекция в квадратных скобках. Нумерация начинается с <code>0</code>.</p>
+<pre><code>fruits = ["яблоко", "банан", "вишня"]\nprint(fruits[0])    # яблоко\nprint(fruits[-1])   # вишня (с конца)\nprint(len(fruits))  # 3\nfruits[1] = "груша" # замена</code></pre>`,
+    starter:'colors = ["красный", "зелёный", "синий"]\n# Выведите второй элемент\n',
+    task:{ text:`<p>Выведите <b>второй</b> элемент списка <code>colors</code> (индекс 1).</p>`,
+      hint:'print(colors[1])',
+      solution:'colors = ["красный", "зелёный", "синий"]\nprint(colors[1])',
+      checks:[ {type:'output', expected:'зелёный', label:'Второй элемент верен'} ] } },
+
+  { id:'m6l2', title:'6.2. Методы списков',
+    theory:`<p>У списков есть удобные методы — они изменяют сам список:</p>
+<pre><code>nums = [1, 2, 3]\nnums.append(4)      # [1, 2, 3, 4]\nnums.insert(0, 0)   # [0, 1, 2, 3, 4]\nnums.remove(2)      # удаляет первый 2\nlast = nums.pop()   # берёт и удаляет последний\nnums.sort()         # сортировка\nnums.reverse()      # обратный порядок</code></pre>
+<div class="tip">💡 <code>sorted(nums)</code> возвращает новый список, а <code>nums.sort()</code> меняет текущий.</div>`,
+    starter:'nums = [5, 3, 8]\n# Добавьте 1 в конец и выведите список\n',
+    task:{ text:`<p>Добавьте число <code>1</code> в конец списка <code>nums</code> и выведите его. Ожидается <code>[5, 3, 8, 1]</code>.</p>`,
+      hint:'nums.append(1)',
+      solution:'nums = [5, 3, 8]\nnums.append(1)\nprint(nums)',
+      checks:[ {type:'output', expected:'[5, 3, 8, 1]', label:'Элемент добавлен'},
+               {type:'code', regex:'\\.append\\s*\\(', label:'Использован append()'} ] } },
+
+  { id:'m6l3', title:'6.3. Срезы и перебор',
+    theory:`<p><b>Срез</b> <code>[start:stop]</code> берёт часть последовательности (stop не включается):</p>
+<pre><code>letters = ["a", "b", "c", "d", "e"]\nprint(letters[1:4])   # ['b', 'c', 'd']\nprint(letters[:2])    # ['a', 'b']\nprint(letters[::2])   # ['a', 'c', 'e']\nprint(letters[::-1])  # в обратном порядке</code></pre>
+<p>Перебор всех элементов:</p>
+<pre><code>for item in letters:\n    print(item)</code></pre>`,
+    starter:'nums = [10, 20, 30, 40, 50]\n# Выведите первые три элемента\n',
+    task:{ text:`<p>Выведите срез первых трёх элементов списка <code>nums</code>: <code>[10, 20, 30]</code>.</p>`,
+      hint:'print(nums[:3])',
+      solution:'nums = [10, 20, 30, 40, 50]\nprint(nums[:3])',
+      checks:[ {type:'output', expected:'[10, 20, 30]', label:'Срез верен'} ] } },
+
+  { id:'m6l4', title:'6.4. Кортежи (tuple)',
+    theory:`<p><b>Кортеж</b> похож на список, но его <b>нельзя изменить</b> после создания. Записывается в круглых скобках.</p>
+<pre><code>point = (3, 7)\nprint(point[0])   # 3\nx, y = point      # распаковка\nprint(x, y)       # 3 7</code></pre>
+<div class="tip">💡 Кортежи используют для данных, которые не должны меняться: координаты, дата, константы.</div>`,
+    starter:'point = (10, 20)\n# Распакуйте кортеж\n',
+    task:{ text:`<p>Распакуйте кортеж <code>point</code> в переменные <code>x</code> и <code>y</code> и выведите их сумму (<code>30</code>).</p>`,
+      hint:'x, y = point, затем print(x + y)',
+      solution:'point = (10, 20)\nx, y = point\nprint(x + y)',
+      checks:[ {type:'output', expected:'30', label:'Сумма верна'} ] } },
+]},
+/* ---------------------------------- МОДУЛЬ 7 ---------------------------------- */
+{ id:'m7', icon:'📖', title:'Модуль 7. Словари и множества', lessons:[
+  { id:'m7l1', title:'7.1. Словари: ключи и значения',
+    theory:`<p><b>Словарь</b> хранит пары «ключ → значение» и записывается в фигурных скобках.</p>
+<pre><code>person = {"имя": "Анна", "возраст": 25}\nprint(person["имя"])       # Анна\nperson["город"] = "Москва" # добавили пару\nprint(person.get("email", "нет"))  # нет</code></pre>
+<p>Метод <code>get()</code> безопасен: не вызовет ошибку, если ключа нет.</p>`,
+    starter:'student = {"имя": "Иван", "балл": 90}\n# Выведите балл\n',
+    task:{ text:`<p>Выведите значение по ключу <code>"балл"</code> из словаря <code>student</code>.</p>`,
+      hint:'print(student["балл"])',
+      solution:'student = {"имя": "Иван", "балл": 90}\nprint(student["балл"])',
+      checks:[ {type:'output', expected:'90', label:'Значение получено'} ] } },
+
+  { id:'m7l2', title:'7.2. Перебор словаря',
+    theory:`<p>Ключи, значения и пары можно перебирать:</p>
+<pre><code>scores = {"математика": 5, "физика": 4}\nfor key in scores:\n    print(key, scores[key])\n\nfor key, value in scores.items():\n    print(f"{key} = {value}")</code></pre>
+<p><code>.keys()</code>, <code>.values()</code>, <code>.items()</code> возвращают ключи, значения и пары.</p>`,
+    starter:'stock = {"яблоки": 10, "груши": 6}\n# Сложите все значения\n',
+    task:{ text:`<p>Найдите сумму всех значений словаря <code>stock</code> и выведите её (<code>16</code>).</p>`,
+      hint:'sum(stock.values())',
+      solution:'stock = {"яблоки": 10, "груши": 6}\nprint(sum(stock.values()))',
+      checks:[ {type:'output', expected:'16', label:'Сумма значений верна'} ] } },
+
+  { id:'m7l3', title:'7.3. Множества (set)',
+    theory:`<p><b>Множество</b> хранит только уникальные элементы, порядок не сохраняется.</p>
+<pre><code>nums = [1, 2, 2, 3, 3, 3]\nunique = set(nums)\nprint(unique)         # {1, 2, 3}\nprint(len(unique))    # 3\n\na = {1, 2, 3}\nb = {3, 4}\nprint(a & b)          # {3} пересечение\nprint(a | b)          # {1,2,3,4} объединение</code></pre>`,
+    starter:'letters = ["a", "b", "a", "c", "b"]\n# Получите уникальные значения\n',
+    task:{ text:`<p>Преобразуйте список <code>letters</code> во множество и выведите количество уникальных букв (<code>3</code>).</p>`,
+      hint:'len(set(letters))',
+      solution:'letters = ["a", "b", "a", "c", "b"]\nprint(len(set(letters)))',
+      checks:[ {type:'output', expected:'3', label:'Количество уникальных верно'} ] } },
+]},
+
+/* ---------------------------------- МОДУЛЬ 8 ---------------------------------- */
+{ id:'m8', icon:'🔤', title:'Модуль 8. Работа со строками', lessons:[
+  { id:'m8l1', title:'8.1. Индексы и срезы строк',
+    theory:`<p>Строка — это последовательность символов. С ней работают индексы и срезы так же, как со списками.</p>
+<pre><code>s = "Python"\nprint(s[0])      # P\nprint(s[-1])     # n\nprint(s[0:3])    # Pyt\nprint(len(s))    # 6\nprint(s[::-1])   # nohtyP (реверс)</code></pre>`,
+    starter:'word = "Программирование"\n# Выведите первые 10 символов\n',
+    task:{ text:`<p>Выведите первые <code>10</code> символов строки <code>word</code>.</p>`,
+      hint:'print(word[:10])',
+      solution:'word = "Программирование"\nprint(word[:10])',
+      checks:[ {type:'output', expected:'Программир', label:'Срез строки верен'} ] } },
+
+  { id:'m8l2', title:'8.2. Методы строк',
+    theory:`<p>Строки неизменяемы, но у них есть методы, возвращающие новую строку:</p>
+<pre><code>s = "  Привет, Мир  "\nprint(s.strip())        # убрать пробелы по краям\nprint(s.upper())        # ПРИВЕТ, МИР\nprint(s.lower())        # привет, мир\nprint(s.replace("и", "ы"))\nprint("a,b,c".split(","))  # ['a', 'b', 'c']\nprint("-".join(["a", "b"]))  # a-b\nprint("abc".startswith("a"))  # True</code></pre>`,
+    starter:'text = "hello world"\n# Сделайте заглавными и замените пробел\n',
+    task:{ text:`<p>Преобразуйте <code>text</code> в верхний регистр и замените пробел на подчёркивание, затем выведите. Ожидается <code>HELLO_WORLD</code>.</p>`,
+      hint:'text.upper().replace(" ", "_")',
+      solution:'text = "hello world"\nprint(text.upper().replace(" ", "_"))',
+      checks:[ {type:'output', expected:'HELLO_WORLD', label:'Строка преобразована верно'} ] } },
+
+  { id:'m8l3', title:'8.3. Проверки и форматирование',
+    theory:`<p>Полезные проверки строк:</p>
+<pre><code>print("123".isdigit())   # True\nprint("abc".isalpha())   # True\nprint("a1".isalnum())    # True</code></pre>
+<p>Форматирование чисел в f-строках:</p>
+<pre><code>price = 3.14159\nprint(f"{price:.2f}")   # 3.14\nprint(f"{price:8.2f}")  # с отступом\nname = "Ия"\nprint(f"{name:>5}")     # выравнивание вправо</code></pre>`,
+    starter:'value = 2.71828\n# Округлите до двух знаков\n',
+    task:{ text:`<p>С помощью f-строки выведите <code>value</code>, округлённое до двух знаков: <code>2.72</code></p>`,
+      hint:'f"{value:.2f}"',
+      solution:'value = 2.71828\nprint(f"{value:.2f}")',
+      checks:[ {type:'output', expected:'2.72', label:'Число округлено до 2 знаков'} ] } },
+]},
+/* ---------------------------------- МОДУЛЬ 9 ---------------------------------- */
+{ id:'m9', icon:'⚙️', title:'Модуль 9. Функции', lessons:[
+  { id:'m9l1', title:'9.1. Определение функции',
+    theory:`<p><b>Функция</b> — это именованный блок кода, который можно вызывать много раз. Определяется словом <code>def</code>.</p>
+<pre><code>def greet():\n    print("Привет!")\n\ngreet()   # вызов функции</code></pre>
+<div class="tip">💡 Имя функции пишется в snake_case, а тело выделяется отступом.</div>`,
+    starter:'def say_hello():\n    # добавьте тело функции\n    pass\n\nsay_hello()\n',
+    task:{ text:`<p>Допишите функцию <code>say_hello()</code>, чтобы она выводила <code>Привет, мир!</code>, и вызовите её.</p>`,
+      hint:'Внутри def с отступом: print("Привет, мир!")',
+      solution:'def say_hello():\n    print("Привет, мир!")\n\nsay_hello()',
+      checks:[ {type:'output', expected:'Привет, мир!', label:'Функция выводит текст'},
+               {type:'code', regex:'def\\s+say_hello\\s*\\(', label:'Функция определена'} ] } },
+
+  { id:'m9l2', title:'9.2. Параметры и аргументы',
+    theory:`<p>Функция может принимать данные — <b>параметры</b>, и возвращать результат — <b>return</b>.</p>
+<pre><code>def add(a, b):\n    return a + b\n\nresult = add(2, 3)\nprint(result)   # 5</code></pre>
+<p>Параметры со значениями по умолчанию:</p>
+<pre><code>def greet(name, greeting="Привет"):\n    return f"{greeting}, {name}!"\n\nprint(greet("Аня"))            # Привет, Аня!\nprint(greet("Боря", "Здравствуй"))</code></pre>`,
+    starter:'def square(n):\n    # верните квадрат числа\n    pass\n\nprint(square(7))\n',
+    task:{ text:`<p>Напишите функцию <code>square(n)</code>, возвращающую квадрат числа. Вызов <code>square(7)</code> должен напечатать <code>49</code>.</p>`,
+      hint:'return n * n',
+      solution:'def square(n):\n    return n * n\n\nprint(square(7))',
+      checks:[ {type:'func', name:'square', args:[7], expected:'49', label:'square(7) → 49'},
+               {type:'func', name:'square', args:[(-3)], expected:'9', label:'square(-3) → 9'} ] } },
+
+  { id:'m9l3', title:'9.3. Возврат значений и несколько результатов',
+    theory:`<p><code>return</code> завершает функцию и передаёт значение. Функция без <code>return</code> возвращает <code>None</code>.</p>
+<pre><code>def min_max(nums):\n    return min(nums), max(nums)\n\nlow, high = min_max([3, 1, 9, 4])\nprint(low, high)   # 1 9</code></pre>
+<p>Возвращать можно сразу несколько значений через запятую — получится кортеж.</p>`,
+    starter:'def is_even(n):\n    # верните True, если чётное\n    pass\n\nprint(is_even(10))\nprint(is_even(7))\n',
+    task:{ text:`<p>Напишите функцию <code>is_even(n)</code>, возвращающую <code>True</code> для чётных чисел и <code>False</code> иначе.</p>`,
+      hint:'return n % 2 == 0',
+      solution:'def is_even(n):\n    return n % 2 == 0\n\nprint(is_even(10))',
+      checks:[ {type:'func', name:'is_even', args:[10], expected:'True', label:'is_even(10) → True'},
+               {type:'func', name:'is_even', args:[7], expected:'False', label:'is_even(7) → False'} ] } },
+]},
+
+/* ---------------------------------- МОДУЛЬ 10 ---------------------------------- */
+{ id:'m10', icon:'🛡️', title:'Модуль 10. Обработка ошибок', lessons:[
+  { id:'m10l1', title:'10.1. Исключения и try/except',
+    theory:`<p>Ошибки в Python называются <b>исключениями</b>. Их можно перехватывать, чтобы программа не «падала».</p>
+<pre><code>try:\n    result = 10 / 0\nexcept ZeroDivisionError:\n    print("На ноль делить нельзя!")</code></pre>
+<p>Частые исключения: <code>ValueError</code>, <code>TypeError</code>, <code>KeyError</code>, <code>IndexError</code>, <code>NameError</code>.</p>`,
+    starter:'# Перехватите деление на ноль\ntry:\n    print(5 / 0)\nexcept ZeroDivisionError:\n    pass\n',
+    task:{ text:`<p>В блоке <code>try</code> вычислите <code>10 / 0</code>, а в <code>except ZeroDivisionError</code> выведите <code>Ошибка деления</code>.</p>`,
+      hint:'except ZeroDivisionError: print("Ошибка деления")',
+      solution:'try:\n    print(10 / 0)\nexcept ZeroDivisionError:\n    print("Ошибка деления")',
+      checks:[ {type:'output', expected:'Ошибка деления', label:'Исключение перехвачено'},
+               {type:'code', regex:'except', label:'Использован except'} ] } },
+
+  { id:'m10l2', title:'10.2. Обработка input и ValueError',
+    theory:`<p>Типичная задача — проверить корректность ввода. Если преобразование невозможно, возникнет <code>ValueError</code>.</p>
+<pre><code>data = "абв"\ntry:\n    number = int(data)\n    print("Число:", number)\nexcept ValueError:\n    print("Это не число")</code></pre>
+<p>Можно обрабатывать несколько типов ошибок: <code>except (ValueError, TypeError):</code>.</p>`,
+    starter:'value = "42abc"\ntry:\n    number = int(value)\n    print(number)\nexcept ValueError:\n    print("Не удалось преобразовать")\n',
+    task:{ text:`<p>Перехватите <code>ValueError</code> при преобразовании <code>"42abc"</code> в число и выведите <code>Не удалось преобразовать</code>.</p>`,
+      hint:'except ValueError: print("Не удалось преобразовать")',
+      solution:'value = "42abc"\ntry:\n    number = int(value)\n    print(number)\nexcept ValueError:\n    print("Не удалось преобразовать")',
+      checks:[ {type:'output', expected:'Не удалось преобразовать', label:'ValueError перехвачен'} ] } },
+
+  { id:'m10l3', title:'10.3. raise и собственная проверка',
+    theory:`<p>Можно возбуждать исключения самому с помощью <code>raise</code>:</p>
+<pre><code>def set_age(age):\n    if age < 0:\n        raise ValueError("Возраст не может быть отрицательным")\n    return age\n\ntry:\n    set_age(-1)\nexcept ValueError as e:\n    print("Ошибка:", e)</code></pre>`,
+    starter:'def divide(a, b):\n    if b == 0:\n        raise ValueError("Деление на ноль")\n    return a / b\n\n# вызовите divide(10, 0) в try\ntry:\n    divide(10, 0)\nexcept ValueError as e:\n    print(e)\n',
+    task:{ text:`<p>Вызовите функцию <code>divide(10, 0)</code> внутри <code>try</code>, перехватите <code>ValueError</code> и выведите текст ошибки (<code>Деление на ноль</code>).</p>`,
+      hint:'except ValueError as e: print(e)',
+      solution:'def divide(a, b):\n    if b == 0:\n        raise ValueError("Деление на ноль")\n    return a / b\n\ntry:\n    divide(10, 0)\nexcept ValueError as e:\n    print(e)',
+      checks:[ {type:'output', expected:'Деление на ноль', label:'Своё исключение возбуждено и перехвачено'} ] } },
+]},
+/* ---------------------------------- МОДУЛЬ 11 ---------------------------------- */
+{ id:'m11', icon:'🏛️', title:'Модуль 11. Классы и ООП', lessons:[
+  { id:'m11l1', title:'11.1. Классы и объекты',
+    theory:`<p><b>Класс</b> — это шаблон для создания объектов. Объект хранит данные (атрибуты) и умеет выполнять действия (методы).</p>
+<pre><code>class Dog:\n    def __init__(self, name):\n        self.name = name\n\n    def bark(self):\n        print(f"{self.name} говорит: Гав!")\n\nrex = Dog("Рекс")\nrex.bark()   # Рекс говорит: Гав!</code></pre>
+<p><code>__init__</code> — конструктор, вызывается при создании объекта. <code>self</code> — ссылка на сам объект.</p>`,
+    starter:'class Cat:\n    def __init__(self, name):\n        self.name = name\n\n# создайте кота Барсик и выведите его имя\n',
+    task:{ text:`<p>Создайте объект класса <code>Cat</code> с именем <code>Барсик</code> в переменной <code>cat</code> и выведите <code>cat.name</code>.</p>`,
+      hint:'cat = Cat("Барсик"), затем print(cat.name)',
+      solution:'class Cat:\n    def __init__(self, name):\n        self.name = name\n\ncat = Cat("Барсик")\nprint(cat.name)',
+      checks:[ {type:'output', expected:'Барсик', label:'Объект создан'},
+               {type:'code', regex:'class\\s+Cat', label:'Класс Cat определён'} ] } },
+
+  { id:'m11l2', title:'11.2. Методы и атрибуты',
+    theory:`<p>Методы — это функции внутри класса. Они работают с данными объекта через <code>self</code>.</p>
+<pre><code>class BankAccount:\n    def __init__(self, balance=0):\n        self.balance = balance\n\n    def deposit(self, amount):\n        self.balance += amount\n        return self.balance\n\n    def withdraw(self, amount):\n        if amount > self.balance:\n            return "Недостаточно средств"\n        self.balance -= amount\n        return self.balance\n\nacc = BankAccount(100)\nprint(acc.deposit(50))   # 150\nprint(acc.withdraw(200)) # Недостаточно средств</code></pre>`,
+    starter:'class Counter:\n    def __init__(self):\n        self.value = 0\n\n    def inc(self):\n        # увеличьте значение на 1\n        pass\n\nc = Counter()\nc.inc()\nc.inc()\nprint(c.value)\n',
+    task:{ text:`<p>Допишите метод <code>inc()</code>, чтобы он увеличивал <code>self.value</code> на 1. После двух вызовов должно напечататься <code>2</code>.</p>`,
+      hint:'self.value += 1',
+      solution:'class Counter:\n    def __init__(self):\n        self.value = 0\n\n    def inc(self):\n        self.value += 1\n\nc = Counter()\nc.inc()\nc.inc()\nprint(c.value)',
+      checks:[ {type:'output', expected:'2', label:'Метод inc() работает'} ] } },
+
+  { id:'m11l3', title:'11.3. Наследование',
+    theory:`<p><b>Наследование</b> позволяет создавать новый класс на основе существующего.</p>
+<pre><code>class Animal:\n    def __init__(self, name):\n        self.name = name\n\n    def speak(self):\n        return "..."\n\nclass Dog(Animal):\n    def speak(self):\n        return "Гав"\n\nclass Cat(Animal):\n    def speak(self):\n        return "Мяу"\n\nfor a in [Dog("Рекс"), Cat("Мурка")]:\n    print(a.name, a.speak())</code></pre>
+<p>Дочерний класс наследует атрибуты и методы родителя и может их переопределять.</p>`,
+    starter:'class Shape:\n    def area(self):\n        return 0\n\nclass Square(Shape):\n    def __init__(self, side):\n        self.side = side\n\n    def area(self):\n        # площадь квадрата\n        pass\n\nprint(Square(4).area())\n',
+    task:{ text:`<p>Реализуйте метод <code>area()</code> в классе <code>Square</code> (площадь = сторона²). Для стороны <code>4</code> ожидается <code>16</code>.</p>`,
+      hint:'return self.side * self.side',
+      solution:'class Shape:\n    def area(self):\n        return 0\n\nclass Square(Shape):\n    def __init__(self, side):\n        self.side = side\n\n    def area(self):\n        return self.side * self.side\n\nprint(Square(4).area())',
+      checks:[ {type:'output', expected:'16', label:'Площадь квадрата верна'} ] } },
+]},
+
+/* ---------------------------------- МОДУЛЬ 12 ---------------------------------- */
+{ id:'m12', icon:'📚', title:'Модуль 12. Модули и стандартная библиотека', lessons:[
+  { id:'m12l1', title:'12.1. Импорт модулей',
+    theory:`<p>Python поставляется с большой <b>стандартной библиотекой</b>. Модули подключают словом <code>import</code>.</p>
+<pre><code>import math\nprint(math.sqrt(16))   # 4.0\nprint(math.pi)         # 3.141592653589793\n\nfrom math import pi, sqrt\nprint(sqrt(25))        # 5.0</code></pre>
+<div class="tip">💡 Здесь доступны модули: math, random, statistics, string, json, re, collections, datetime, time.</div>`,
+    starter:'import math\n# Найдите квадратный корень из 81\n',
+    task:{ text:`<p>С помощью модуля <code>math</code> выведите квадратный корень из <code>81</code> (ожидается <code>9</code>).</p>`,
+      hint:'import math; print(math.sqrt(81))',
+      solution:'import math\nprint(math.sqrt(81))',
+      checks:[ {type:'output', expected:'9', label:'Корень вычислен верно'},
+               {type:'code', regex:'import\\s+math', label:'Модуль math импортирован'} ] } },
+
+  { id:'m12l2', title:'12.2. Модуль random',
+    theory:`<p>Модуль <code>random</code> генерирует случайные значения. Чтобы результат был предсказуем в тестах, можно задать <code>seed()</code>.</p>
+<pre><code>import random\nprint(random.randint(1, 6))      # случайное от 1 до 6\nprint(random.choice(["орёл", "решка"]))\nrandom.shuffle([1, 2, 3])\nprint(random.random())          # от 0.0 до 1.0</code></pre>`,
+    starter:'import random\n# Получите случайное целое от 1 до 10\n',
+    task:{ text:`<p>Выведите случайное число, которое гарантированно находится в диапазоне от <code>1</code> до <code>10</code>. Проверим, что результат — одно из чисел 1..10.</p>`,
+      hint:'random.randint(1, 10)',
+      solution:'import random\nprint(random.randint(1, 10))',
+      checks:[ {type:'code', regex:'randint\\s*\\(\\s*1\\s*,\\s*10\\s*\\)', label:'Использован randint(1, 10)'} ] } },
+
+  { id:'m12l3', title:'12.3. Модуль statistics',
+    theory:`<p>Модуль <code>statistics</code> помогает считать статистики:</p>
+<pre><code>import statistics\ndata = [2, 4, 4, 4, 5, 5, 7, 9]\nprint(statistics.mean(data))    # среднее\nprint(statistics.median(data))  # медиана\nprint(statistics.mode(data))    # мода</code></pre>`,
+    starter:'import statistics\nscores = [10, 20, 30, 40]\n# Выведите среднее арифметическое\n',
+    task:{ text:`<p>Выведите среднее арифметическое списка <code>scores</code> (<code>25</code>).</p>`,
+      hint:'statistics.mean(scores)',
+      solution:'import statistics\nscores = [10, 20, 30, 40]\nprint(statistics.mean(scores))',
+      checks:[ {type:'output', expected:'25', label:'Среднее значение верно'} ] } },
+]},
+
+/* ---------------------------------- МОДУЛЬ 13 ---------------------------------- */
+{ id:'m13', icon:'🏆', title:'Модуль 13. Итоговые проекты', lessons:[
+  { id:'m13l1', title:'Проект 1. Калькулятор',
+    theory:`<p>Соберём всё вместе: функции, условия и обработка ошибок.</p>
+<pre><code>def calculate(a, b, op):\n    if op == "+":\n        return a + b\n    elif op == "-":\n        return a - b\n    elif op == "*":\n        return a * b\n    elif op == "/":\n        if b == 0:\n            return "Ошибка"\n        return a / b</code></pre>`,
+    starter:'def calculate(a, b, op):\n    if op == "+":\n        return a + b\n    elif op == "-":\n        return a - b\n    elif op == "*":\n        return a * b\n    elif op == "/":\n        if b == 0:\n            return "Ошибка"\n        return a / b\n\nprint(calculate(6, 3, "+"))\n',
+    task:{ text:`<p>Используя функцию <code>calculate</code>, выведите результат <code>calculate(6, 3, "+")</code> и <code>calculate(6, 3, "-")</code>.</p>`,
+      hint:'print(calculate(6, 3, "+")); print(calculate(6, 3, "-"))',
+      solution:'def calculate(a, b, op):\n    if op == "+":\n        return a + b\n    elif op == "-":\n        return a - b\n    elif op == "*":\n        return a * b\n    elif op == "/":\n        if b == 0:\n            return "Ошибка"\n        return a / b\n\nprint(calculate(6, 3, "+"))\nprint(calculate(6, 3, "-"))',
+      checks:[ {type:'output', expected:'9\n3', label:'Калькулятор работает'} ] } },
+
+  { id:'m13l2', title:'Проект 2. Угадай число',
+    theory:`<p>Игра, использующая цикл, условия и <code>break</code>:</p>
+<pre><code>secret = 7\nfor guess in [3, 5, 7]:\n    if guess == secret:\n        print("Угадал!")\n        break\n    else:\n        print("Не то")</code></pre>`,
+    starter:'secret = 7\nfor guess in [3, 5, 7]:\n    if guess == secret:\n        print("Угадал!")\n        break\n    else:\n        print("Не то")\n',
+    task:{ text:`<p>Запустите игру с секретным числом <code>7</code> и попытками <code>[3, 5, 7]</code>. Ожидаемый вывод: <code>Не то</code>, <code>Не то</code>, <code>Угадал!</code></p>`,
+      hint:'Текст уже готов — просто запустите и проверьте.',
+      solution:'secret = 7\nfor guess in [3, 5, 7]:\n    if guess == secret:\n        print("Угадал!")\n        break\n    else:\n        print("Не то")',
+      checks:[ {type:'output', expected:'Не то\nНе то\nУгадал!', label:'Игра завершилась верно'} ] } },
+
+  { id:'m13l3', title:'Проект 3. Анализ данных о студентах',
+    theory:`<p>Объединим словари, списки, циклы и функции для мини-анализа.</p>
+<pre><code>students = [\n    {"name": "Аня", "grade": 5},\n    {"name": "Боря", "grade": 3},\n    {"name": "Вера", "grade": 4},\n]\n\ndef average(data):\n    total = sum(s["grade"] for s in data)  # простое выражение\n    return total / len(data)</code></pre>
+<p>Версия без генераторов:</p>
+<pre><code>def average(data):\n    total = 0\n    for s in data:\n        total += s["grade"]\n    return total / len(data)</code></pre>`,
+    starter:'students = [\n    {"name": "Аня", "grade": 5},\n    {"name": "Боря", "grade": 3},\n    {"name": "Вера", "grade": 4},\n]\n\n# Найдите средний балл\n',
+    task:{ text:`<p>Посчитайте и выведите средний балл студентов (ожидается <code>4</code>).</p>`,
+      hint:'Сложите grade в цикле и разделите на количество студентов.',
+      solution:'students = [\n    {"name": "Аня", "grade": 5},\n    {"name": "Боря", "grade": 3},\n    {"name": "Вера", "grade": 4},\n]\n\ntotal = 0\nfor s in students:\n    total += s["grade"]\nprint(total / len(students))',
+      checks:[ {type:'output', expected:'4', label:'Средний балл = 4'} ] } },
+]},
+];
+/* =========================================================================
+   4. ПОДСВЕТКА СИНТАКСИСА
+   ========================================================================= */
+function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>'); }
+function highlightPython(src){
+  const kwSet=new Set(['if','elif','else','for','while','def','return','break','continue','pass','and','or','not','in','is','import','from','as','class','try','except','finally','raise','lambda','global','nonlocal','with','del','assert','yield','True','False','None']);
+  const twoOps=['==','!=','<=','>=','//','**','+=','-=','*=','/=','->',':='];
+  let out=''; let i=0; const n=src.length;
+  const sp=(cls,txt)=>'<span class="tok-'+cls+'">'+escHtml(txt)+'</span>';
+  while(i<n){
+    const c=src[i];
+    if(c==='#'){ let j=i; while(j<n&&src[j]!=='\n')j++; out+=sp('com',src.slice(i,j)); i=j; continue; }
+    let pi=i, pre='';
+    if(/[fFrRbBuU]/.test(c)){ let k=i; while(k<n&&/[fFrRbBuU]/.test(src[k])&&k-i<2)k++; if(k<n&&(src[k]==='"'||src[k]==="'")){ pre=src.slice(i,k); pi=k; } }
+    if(src[pi]==='"'||src[pi]==="'"){
+      const q=src[pi]; let triple=false; let j=pi;
+      if(src[j+1]===q&&src[j+2]===q){ triple=true; j+=3; } else j+=1;
+      while(j<n){ if(triple){ if(src[j]===q&&src[j+1]===q&&src[j+2]===q){ j+=3; break; } } else if(src[j]===q){ j+=1; break; }
+        if(src[j]==='\\'){ j+=2; continue; } j++; }
+      out+=sp('str',src.slice(i,Math.min(j,n))); i=Math.min(j,n); continue;
+    }
+    if(/[0-9]/.test(c)||(c==='.'&&/[0-9]/.test(src[i+1]||''))){
+      let j=i;
+      if(c==='0'&&/[xXoObB]/.test(src[i+1]||'')){ j=i+2; while(j<n&&/[0-9a-fA-F_]/.test(src[j]))j++; }
+      else { while(j<n&&/[0-9_]/.test(src[j]))j++; if(src[j]==='.'){ j++; while(j<n&&/[0-9_]/.test(src[j]))j++; } if(/[eE]/.test(src[j]||'')){ let m=j+1; if(src[m]==='+'||src[m]==='-')m++; if(/[0-9]/.test(src[m]||'')){ j=m; while(j<n&&/[0-9]/.test(src[j]))j++; } } }
+      out+=sp('num',src.slice(i,j)); i=j; continue;
+    }
+    if(/[A-Za-z_]/.test(c)){ let j=i; while(j<n&&/[A-Za-z0-9_]/.test(src[j]))j++; const w=src.slice(i,j);
+      if(kwSet.has(w)) out+=sp('kw',w); else if(BUILTIN_NAMES.has(w)) out+=sp('bi',w); else out+=escHtml(w); i=j; continue; }
+    if('+-*/%<>=()[]{}.,:;'.includes(c)){
+      const two=src.substr(i,2);
+      if(twoOps.indexOf(two)>=0){ out+=escHtml(two); i+=2; } else { out+=escHtml(c); i++; }
+      continue;
+    }
+    out+=escHtml(c); i++;
+  }
+  return out;
+}
+
+/* =========================================================================
+   5. ХРАНИЛИЩЕ И СОСТОЯНИЕ
+   ========================================================================= */
+const PROGRESS_KEY='pycamp.progress.v1';
+const CODE_KEY='pycamp.code.v1';
+let progress={}; let codeStore={};
+try{ progress=JSON.parse(localStorage.getItem(PROGRESS_KEY)||'{}')||{}; }catch(e){ progress={}; }
+try{ codeStore=JSON.parse(localStorage.getItem(CODE_KEY)||'{}')||{}; }catch(e){ codeStore={}; }
+function saveProgress(){ try{ localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); }catch(e){} }
+function saveCode(){ try{ localStorage.setItem(CODE_KEY, JSON.stringify(codeStore)); }catch(e){} }
+
+const LESSONS=[];
+COURSE.forEach(function(m){ m.lessons.forEach(function(l){ LESSONS.push({module:m, lesson:l}); }); });
+let activeId=null;
+function findEntry(id){ for(let k=0;k<LESSONS.length;k++) if(LESSONS[k].lesson.id===id) return LESSONS[k]; return null; }
+
+/* =========================================================================
+   6. ЭЛЕМЕНТЫ DOM
+   ========================================================================= */
+const mainEl=document.getElementById('main');
+const navEl=document.getElementById('courseTree');
+const codeEl=document.getElementById('code');
+const highlightEl=document.getElementById('highlight');
+const gutterEl=document.getElementById('gutter');
+const consoleEl=document.getElementById('console');
+const resultsEl=document.getElementById('results');
+const sidebarEl=document.getElementById('sidebar');
+
+/* =========================================================================
+   7. ДЕРЕВО КУРСА
+   ========================================================================= */
+function renderTree(){
+  navEl.innerHTML='';
+  COURSE.forEach(function(m, mi){
+    const wrap=document.createElement('div'); wrap.className='module';
+    const doneCount=m.lessons.filter(function(l){ return progress[l.id]; }).length;
+    const head=document.createElement('div'); head.className='module-head';
+    const countHtml = doneCount===m.lessons.length
+      ? '<span class="module-count" style="background:#00471b;color:#7bed9f">'+doneCount+'/'+m.lessons.length+' ✓</span>'
+      : '<span class="module-count">'+doneCount+'/'+m.lessons.length+'</span>';
+    head.innerHTML='<span class="module-icon">'+m.icon+'</span><span style="flex:1">'+escHtml(m.title)+'</span>'+countHtml+'<span class="chev">▶</span>';
+    const list=document.createElement('div'); list.className='lessons';
+    m.lessons.forEach(function(l){
+      const a=document.createElement('div');
+      a.className='lesson-link'+(progress[l.id]?' done':'')+(l.id===activeId?' active':'');
+      a.innerHTML='<span class="check">'+(progress[l.id]?'✓':'')+'</span><span>'+escHtml(l.title)+'</span>';
+      a.onclick=function(){ openLesson(l.id); closeSidebar(); };
+      list.appendChild(a);
+    });
+    head.onclick=function(){ wrap.classList.toggle('open'); };
+    wrap.appendChild(head); wrap.appendChild(list);
+    navEl.appendChild(wrap);
+    if(activeId && m.lessons.some(function(l){ return l.id===activeId; })) wrap.classList.add('open');
+    else if(!activeId && mi===0) wrap.classList.add('open');
+  });
+}
+
+/* =========================================================================
+   8. ОТКРЫТИЕ УРОКА
+   ========================================================================= */
+function openLesson(id){
+  const entry=findEntry(id); if(!entry) return;
+  activeId=id;
+  const l=entry.lesson;
+  document.getElementById('crumbs').textContent=entry.module.title;
+  document.getElementById('lessonTitle').innerHTML=escHtml(l.title)+(progress[id]?'<span class="badge">✔ изучено</span>':'');
+  document.getElementById('theoryPane').innerHTML=l.theory;
+  document.getElementById('taskTitle').innerHTML='✏️ Задание';
+  document.getElementById('taskPane').innerHTML=l.task.text;
+  const hintBox=document.getElementById('hintBox');
+  hintBox.innerHTML='💡 '+(l.task.hint||'Подсказка недоступна.');
+  hintBox.classList.remove('show');
+  const solBox=document.getElementById('solutionBox');
+  solBox.innerHTML='<div style="font-weight:600;color:var(--muted);margin-bottom:6px">Пример решения:</div><pre><code>'+escHtml(l.task.solution||'')+'</code></pre>';
+  solBox.classList.remove('show');
+  codeEl.value = (id in codeStore) ? codeStore[id] : (l.starter||'');
+  syncEditor();
+  consoleEl.innerHTML='<span class="lbl">Нажмите «Запустить» или «Проверить»…</span>';
+  resultsEl.style.display='none'; resultsEl.innerHTML='';
+  renderTree();
+  mainEl.scrollTop=0;
+}
+
+/* =========================================================================
+   9. РЕДАКТОР
+   ========================================================================= */
+function syncEditor(){
+  const val=codeEl.value;
+  highlightEl.innerHTML=highlightPython(val)+'\n';
+  const lines=val.split('\n').length;
+  let g=''; for(let i=1;i<=Math.max(lines,1);i++) g+=i+'\n';
+  gutterEl.textContent=g;
+  highlightEl.scrollTop=codeEl.scrollTop;
+  highlightEl.scrollLeft=codeEl.scrollLeft;
+  gutterEl.scrollTop=codeEl.scrollTop;
+}
+codeEl.addEventListener('input', function(){
+  if(activeId!==null){ codeStore[activeId]=codeEl.value; saveCode(); }
+  syncEditor();
+});
+codeEl.addEventListener('scroll', function(){
+  highlightEl.scrollTop=codeEl.scrollTop;
+  highlightEl.scrollLeft=codeEl.scrollLeft;
+  gutterEl.scrollTop=codeEl.scrollTop;
+});
+codeEl.addEventListener('keydown', function(e){
+  if(e.key==='Tab'){
+    e.preventDefault();
+    const s=codeEl.selectionStart, en=codeEl.selectionEnd;
+    codeEl.value=codeEl.value.slice(0,s)+'    '+codeEl.value.slice(en);
+    codeEl.selectionStart=codeEl.selectionEnd=s+4;
+    if(activeId!==null){ codeStore[activeId]=codeEl.value; saveCode(); }
+    syncEditor();
+  } else if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){
+    e.preventDefault(); runCode();
+  }
+});
+
+/* =========================================================================
+   10. ЗАПУСК И ПРОВЕРКА
+   ========================================================================= */
+function showConsole(res){
+  consoleEl.innerHTML='';
+  if(res.output){ const t=document.createElement('span'); t.textContent=res.output; consoleEl.appendChild(t); }
+  if(res.error){ const d=document.createElement('div'); d.className='err'; d.textContent=(res.output?'\n':'')+'⚠ '+res.error; consoleEl.appendChild(d); }
+  if(!res.output && !res.error) consoleEl.innerHTML='<span class="lbl">Программа завершилась без вывода.</span>';
+}
+function runCode(){
+  if(activeId===null) return;
+  const res=runPython(codeEl.value, {inputs:[], allowPrompt:true});
+  showConsole(res);
+  resultsEl.style.display='none';
+}
+function checkCode(){
+  if(activeId===null) return;
+  const entry=findEntry(activeId);
+  const src=codeEl.value;
+  const results=evalChecks(entry.lesson, src);
+  // показываем вывод программы в консоли первого output-теста
+  const outCheck=entry.lesson.task.checks.filter(function(c){ return c.type==='output'; })[0];
+  showConsole(runPython(src, {inputs:(outCheck&&outCheck.inputs)||[], allowPrompt:true}));
+
+  resultsEl.innerHTML='';
+  let allPass = results.length>0;
+  results.forEach(function(r){
+    if(!r.ok) allPass=false;
+    const row=document.createElement('div'); row.className='result-row '+(r.ok?'pass':'fail');
+    row.innerHTML='<span class="ico">'+(r.ok?'✓':'✗')+'</span><div style="flex:1"><div>'+escHtml(r.label)+'</div>'+(r.detail?'<div class="detail">'+escHtml(r.detail)+'</div>':'')+'</div>';
+    resultsEl.appendChild(row);
+  });
+  const banner=document.createElement('div'); banner.className='banner '+(allPass?'ok':'no');
+  banner.textContent= allPass ? '🎉 Отлично! Задание выполнено.' : 'Пока не всё верно — посмотрите разбор ниже.';
+  resultsEl.insertBefore(banner, resultsEl.firstChild);
+  resultsEl.style.display='block';
+
+  if(allPass){
+    progress[activeId]=true; saveProgress(); updateProgressBar();
+    document.getElementById('lessonTitle').innerHTML=escHtml(entry.lesson.title)+'<span class="badge">✔ изучено</span>';
+    renderTree();
+  }
+}
+function updateProgressBar(){
+  const total=LESSONS.length;
+  const done=LESSONS.filter(function(e){ return progress[e.lesson.id]; }).length;
+  const pct= total? Math.round(done/total*100) : 0;
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressText').textContent=done+' / '+total;
+}
+
+/* =========================================================================
+   11. КНОПКИ И НАВИГАЦИЯ
+   ========================================================================= */
+function closeSidebar(){ if(window.innerWidth<=820) sidebarEl.classList.remove('open'); }
+document.getElementById('menuBtn').onclick=function(){ sidebarEl.classList.toggle('open'); };
+document.getElementById('runBtn').onclick=runCode;
+document.getElementById('checkBtn').onclick=checkCode;
+document.getElementById('hintBtn').onclick=function(){ document.getElementById('hintBox').classList.toggle('show'); };
+document.getElementById('solutionBtn').onclick=function(){ document.getElementById('solutionBox').classList.toggle('show'); };
+document.getElementById('resetCodeBtn').onclick=function(){
+  const entry=findEntry(activeId); if(!entry) return;
+  codeEl.value=entry.lesson.starter||'';
+  codeStore[activeId]=codeEl.value; saveCode(); syncEditor();
+  consoleEl.innerHTML='<span class="lbl">Код сброшен к исходному.</span>';
+  resultsEl.style.display='none';
+};
+document.getElementById('resetBtn').onclick=function(){
+  if(!window.confirm('Сбросить весь прогресс и написанный код?')) return;
+  progress={}; codeStore={}; saveProgress(); saveCode();
+  updateProgressBar(); openLesson(LESSONS[0].lesson.id);
+};
+
+/* =========================================================================
+   12. СТАРТ
+   ========================================================================= */
+openLesson(LESSONS[0].lesson.id);
+updateProgressBar();
+renderTree();
+console.log('PyCamp готов. Уроков:', LESSONS.length);
+</script>
+</body>
+</html>

@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PyCamp — Изучай Python бесплатно</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0e17;
+    --bg-soft: #111827;
+    --panel: #161f2e;
+    --panel-2: #1c2739;
+    --border: #263349;
+    --text: #e6edf7;
+    --muted: #8b9bb4;
+    --accent: #3776ab;
+    --accent-2: #ffd343;
+    --ok: #22c55e;
+    --err: #ef4444;
+    --warn: #f59e0b;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ---------- HEADER ---------- */
+  header {
+    height: 58px;
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    gap: 18px;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 19px;
+    white-space: nowrap;
+  }
+
+  .logo .py {
+    background: linear-gradient(135deg, #3776ab 50%, #ffd343 50%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 24px;
+  }
+
+  .progress-wrap {
+    flex: 1;
+    max-width: 420px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 9px;
+    background: var(--panel-2);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius: 20px;
+    transition: width .5s ease;
+  }
+
+  .progress-text {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .header-actions { margin-left: auto; display: flex; gap: 10px; }
+
+  .btn {
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .18s;
+    font-family: inherit;
+  }
+
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #4a8ac9; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+  .btn-ok { background: var(--ok); color: #05230f; }
+  .btn-ok:hover { background: #34d97a; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  /* ---------- LAYOUT ---------- */
+  .main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 290px 1fr 1fr;
+    overflow: hidden;
+  }
+
+  /* ---------- SIDEBAR ---------- */
+  aside {
+    background: var(--bg-soft);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 14px 10px 40px;
+  }
+
+  aside::-webkit-scrollbar { width: 8px; }
+  aside::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .module {
+    margin-bottom: 8px;
+  }
+
+  .module-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+    border-radius: 8px;
+    user-select: none;
+  }
+  .module-title:hover { background: var(--panel); }
+  .module-title .arrow {
+    margin-left: auto;
+    transition: transform .2s;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .module.collapsed .arrow { transform: rotate(-90deg); }
+  .module.collapsed .lesson-list { display: none; }
+
+  .lesson-list { padding: 2px 0 6px; }
+
+  .lesson {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 12px 8px 30px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 6px;
+    margin: 1px 0;
+    transition: .15s;
+  }
+  .lesson:hover { background: var(--panel); color: var(--text); }
+  .lesson.active { background: var(--panel-2); color: var(--text); font-weight: 600; }
+
+  .dot {
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    color: transparent;
+  }
+  .lesson.done .dot {
+    background: var(--ok);
+    border-color: var(--ok);
+    color: #05230f;
+  }
+  .lesson.active .dot { border-color: var(--accent); }
+
+  /* ---------- PANELS ---------- */
+  .panel {
+    overflow-y: auto;
+    padding: 26px 30px 60px;
+    background: var(--bg);
+  }
+  .panel::-webkit-scrollbar { width: 9px; }
+  .panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+
+  .instructions { border-right: 1px solid var(--border); }
+
+  .lesson-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    background: rgba(255,211,67,.09);
+    border: 1px solid rgba(255,211,67,.25);
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+
+  h1.lesson-h {
+    font-size: 24px;
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+
+  .content p { margin-bottom: 13px; line-height: 1.7; color: #c8d4e6; font-size: 15px; }
+  .content code.inline {
+    background: var(--panel-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 13.5px;
+    color: var(--accent-2);
+  }
+  .content ul { margin: 0 0 14px 20px; }
+  .content li { margin-bottom: 7px; line-height: 1.6; color: #c8d4e6; font-size: 15px; }
+
+  pre.code-block {
+    background: #0d1420;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 14px 0;
+    overflow-x: auto;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #d7e3f4;
+  }
+  pre.code-block .cm { color: #5d7290; font-style: italic; }
+  pre.code-block .kw { color: #ff7b72; }
+  pre.code-block .st { color: #a5d6ff; }
+  pre.code-block .fn { color: #d2a8ff; }
+  pre.code-block .nm { color: #79c0ff; }
+
+  .hint {
+    background: rgba(245,158,11,.07);
+    border: 1px solid rgba(245,158,11,.3);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    color: #fcd34d;
+    margin: 16px 0;
+    line-height: 1.6;
+  }
+
+  /* ---------- EDITOR ---------- */
+  .editor-panel { display: flex; flex-direction: column; padding: 0; }
+
+  .editor-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .tab {
+    font-size: 12.5px;
+    color: var(--muted);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-family: 'Consolas', monospace;
+  }
+  .tab.active { background: var(--panel-2); color: var(--accent-2); }
+
+  .editor-wrap {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    background: #0d1420;
+    min-height: 0;
+  }
+
+  .line-numbers {
+    padding: 14px 8px 14px 12px;
+    text-align: right;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #3d4d66;
+    user-select: none;
+    background: #0a1019;
+    overflow: hidden;
+    flex-shrink: 0;
+    min-width: 44px;
+  }
+
+  #editor {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    color: #d7e3f4;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+    line-height: 1.55;
+    padding: 14px 14px 14px 10px;
+    tab-size: 4;
+    white-space: pre;
+    overflow: auto;
+  }
+  #editor::selection { background: #264f78; }
+
+  /* ---------- OUTPUT ---------- */
+  .output-wrap {
+    height: 40%;
+    min-height: 130px;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+    flex-shrink: 0;
+  }
+
+  .output-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+  }
+
+  #output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 14px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 13.5px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  #output::-webkit-scrollbar { width: 8px; }
+  #output::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .out-ok { color: var(--ok); }
+  .out-err { color: var(--err); }
+  .out-info { color: var(--muted); }
+  .out-echo { color: #6b7f9c; }
+
+  .editor-actions {
+    display: flex;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  /* ---------- MODAL ---------- */
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.72);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(3px);
+  }
+  .modal-bg.show { display: flex; }
+
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 34px;
+    max-width: 460px;
+    text-align: center;
+    animation: pop .3s ease;
+  }
+  @keyframes pop { from { transform: scale(.9); opacity: 0; } }
+
+  .modal h2 { font-size: 22px; margin-bottom: 12px; }
+  .modal p { color: var(--muted); line-height: 1.6; margin-bottom: 22px; font-size: 14.5px; }
+  .modal .emoji { font-size: 46px; margin-bottom: 10px; }
+
+  /* ---------- WELCOME ---------- */
+  .welcome {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, #14213a 0%, var(--bg) 60%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px;
+    z-index: 200;
+  }
+  .welcome h1 {
+    font-size: 52px;
+    margin-bottom: 14px;
+    background: linear-gradient(120deg, #3776ab, #ffd343);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .welcome p { color: var(--muted); font-size: 17px; max-width: 560px; line-height: 1.7; margin-bottom: 30px; }
+  .welcome .btn { padding: 14px 34px; font-size: 16px; }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 1000px) {
+    .main { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+    aside { max-height: 190px; border-right: none; border-bottom: 1px solid var(--border); }
+    .instructions { max-height: 42vh; border-right: none; border-bottom: 1px solid var(--border); }
+    .editor-panel { min-height: 60vh; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ WELCOME ============ -->
+<div class="welcome" id="welcome">
+  <h1>PyCamp</h1>
+  <p>Бесплатная интерактивная платформа для изучения Python с нуля.
+     Проходи уроки, пиши код прямо в браузере и сразу проверяй результат.</p>
+  <button class="btn btn-primary" onclick="startCourse()">Начать обучение →</button>
+</div>
+
+<!-- ============ HEADER ============ -->
+<header>
+  <div class="logo"><span class="py">Py</span>Camp</div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-text" id="progressText">0 / 0</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="resetProgress()">Сбросить</button>
+  </div>
+</header>
+
+<!-- ============ MAIN ============ -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar"></aside>
+
+  <!-- INSTRUCTIONS -->
+  <section class="panel instructions content" id="instructions"></section>
+
+  <!-- EDITOR -->
+  <section class="panel editor-panel">
+    <div class="editor-head">
+      <span class="tab active">main.py</span>
+      <span class="tab" id="lessonCounter"></span>
+    </div>
+
+    <div class="editor-wrap">
+      <div class="line-numbers" id="lineNumbers">1</div>
+      <textarea id="editor" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+    </div>
+
+    <div class="output-wrap">
+      <div class="output-head">Вывод</div>
+      <div id="output"><span class="out-info">Нажмите «Выполнить код», чтобы увидеть результат.</span></div>
+    </div>
+
+    <div class="editor-actions">
+      <button class="btn btn-primary" onclick="runCode()">▶ Выполнить код</button>
+      <button class="btn btn-ok" id="checkBtn" onclick="checkSolution()">✓ Проверить задание</button>
+      <button class="btn btn-ghost" onclick="resetCode()">↺ Сбросить код</button>
+    </div>
+  </section>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="emoji" id="modalEmoji">🎉</div>
+    <h2 id="modalTitle">Отлично!</h2>
+    <p id="modalText">Задание выполнено.</p>
+    <button class="btn btn-primary" id="modalBtn" onclick="closeModal()">Продолжить</button>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   КУРС: модули и уроки
+   ===================================================================== */
+const COURSE = [
+  {
+    title: "Основы Python",
+    lessons: [
+      {
+        id: "hello",
+        title: "Привет, Python!",
+        theory: `
+          <span class="lesson-badge">Урок 1</span>
+          <h1 class="lesson-h">Привет, Python!</h1>
+          <p>Python — один из самых популярных языков программирования в мире.
+             Он читается почти как английский текст, поэтому идеально подходит для начинающих.</p>
+          <p>Первая программа, которую пишут все — вывод текста на экран.
+             Для этого используется функция <code class="inline">print()</code>:</p>
+          <pre class="code-block"><span class="fn">print</span>(<span class="st">"Привет, мир!"</span>)</pre>
+          <p>Текст (строку) нужно заключать в кавычки — одинарные или двойные.</p>
+          <div class="hint">💡 В Python важен регистр: <code class="inline">Print</code> и <code class="inline">print</code> — разные вещи.</div>
+          <p><b>Задание:</b> выведите на экран строку <code class="inline">Hello, Python!</code></p>
+        `,
+        starter: `# Напишите свой код ниже\nprint("Привет, мир!")\n`,
+        check(output, code) {
+          if (!/print\s*\(\s*['"]Hello,\s*Python!['"]\s*\)/.test(code))
+            return "Используйте print() со строкой 'Hello, Python!' — обратите внимание на точное написание и регистр.";
+          if (!output.includes("Hello, Python!"))
+            return "Код выполнился, но нужная строка не выведена. Проверьте текст внутри print().";
+          return true;
+        }
+      },
+      {
+        id: "variables",
+        title: "Переменные",
+        theory: `
+          <span class="lesson-badge">Урок 2</span>
+          <h1 class="lesson-h">Переменные</h1>
+          <p>Переменная — это «коробка» с именем, в которой хранится значение.
+             Создать её очень просто:</p>
+          <pre class="code-block">name = <span class="st">"Алиса"</span>
+age = <span class="nm">25</span></pre>
+          <p>Знак <code class="inline">=</code> — это оператор присваивания (не сравнение!).</p>
+          <p>Переменные можно использовать в других выражениях и выводить:</p>
+          <pre class="code-block"><span class="fn">print</span>(name)
+<span class="fn">print</span>(age)</pre>
+          <p><b>Задание:</b> создайте переменную <code class="inline">city</code> со значением
+             <code class="inline">"Moscow"</code> и выведите её на экран.</p>
+        `,
+        starter: `# Создайте переменную city и выведите её\n`,
+        check(output, code) {
+          if (!/city\s*=\s*['"]Moscow['"]/.test(code))
+            return "Создайте переменную: city = \"Moscow\"";
+          if (!output.includes("Moscow"))
+            return "Не забудьте вывести переменную через print(city).";
+          return true;
+        }
+      },
+      {
+        id: "types",
+        title: "Типы данных",
+        theory: `
+          <span class="lesson-badge">Урок 3</span>
+          <h1 class="lesson-h">Типы данных</h1>
+          <p>В Python есть несколько основных типов:</p>
+          <ul>
+            <li><code class="inline">int</code> — целые числа: <code class="inline">42</code></li>
+            <li><code class="inline">float</code> — дробные: <code class="inline">3.14</code></li>
+            <li><code class="inline">str</code> — строки: <code class="inline">"текст"</code></li>
+            <li><code class="inline">bool</code> — логический: <code class="inline">True</code> / <code class="inline">False</code></li>
+          </ul>
+          <p>Узнать тип можно функцией <code class="inline">type()</code>:</p>
+          <pre class="code-block"><span class="fn">print</span>(<span class="fn">type</span>(<span class="nm">42</span>))       <span class="cm"># &lt;class 'int'&gt;</span>
+<span class="fn">print</span>(<span class="fn">type</span>(<span class="st">"hi"</span>))     <span class="cm"># &lt;class 'str'&gt;</span></pre>
+          <p><b>Задание:</b> создайте переменную <code class="inline">pi = 3.14</code> и выведите её тип
+             с помощью <code class="inline">print(type(pi))</code>.</p>
+        `,
+        starter: `# Создайте pi и выведите его тип\n`,
+        check(output, code) {
+          if (!/pi\s*=\s*3\.14/.test(code))
+            return "Создайте переменную pi со значением 3.14";
+          if (!/type\s*\(\s*pi\s*\)/.test(code))
+            return "Используйте print(type(pi)), чтобы вывести тип переменной.";
+          if (!output.includes("float"))
+            return "Ожидается вывод типа float. Проверьте, что pi = 3.14 (с точкой).";
+          return true;
+        }
+      },
+      {
+        id: "input",
+        title: "Ввод данных",
+        theory: `
+          <span class="lesson-badge">Урок 4</span>
+          <h1 class="lesson-h">Ввод данных</h1>
+          <p>Функция <code class="inline">input()</code> позволяет получить данные от пользователя.
+             Она <b>всегда</b> возвращает строку.</p>
+          <pre class="code-block">name = <span class="fn">input</span>(<span class="st">"Как вас зовут? "</span>)
+<span class="fn">print</span>(<span class="st">"Привет, "</span> + name)</pre>
+          <p>Чтобы получить число, используют преобразование типов:</p>
+          <pre class="code-block">age = <span class="fn">int</span>(<span class="fn">input</span>(<span class="st">"Возраст: "</span>))</pre>
+          <div class="hint">💡 В этом уроке input() не используется — просто объявите переменные.</div>
+          <p><b>Задание:</b> создайте переменную <code class="inline">username = "student"</code>
+             и выведите <code class="inline">"User: student"</code> с помощью конкатенации
+             (сложения строк через <code class="inline">+</code>).</p>
+        `,
+        starter: `# Создайте username и выведите "User: student"\n`,
+        check(output, code) {
+          if (!/username\s*=\s*['"]student['"]/.test(code))
+            return "Создайте переменную username = \"student\"";
+          if (!/print\s*\(\s*['"]User:\s*['"]\s*\+\s*username\s*\)/.test(code))
+            return "Используйте конкатенацию: print(\"User: \" + username)";
+          if (!output.includes("User: student"))
+            return "Ожидается вывод: User: student";
+          return true;
+        }
+      }
+    ]
+  },
+  {
+    title: "Условия и циклы",
+    lessons: [
+      {
+        id: "if",
+        title: "Условный оператор if",
+        theory: `
+          <span class="lesson-badge">Урок 5</span>
+          <h1 class="lesson-h">Условный оператор if</h1>
+          <p><code class="inline">if</code> позволяет выполнять код только при выполнении условия:</p>
+          <pre class="code-block">age = <span class="nm">20</span>
+<span class="kw">if</span> age >= <span class="nm">18</span>:
+    <span class="fn">print</span>(<span class="st">"Совершеннолетний"</span>)</pre>
+          <p>Операторы сравнения: <code class="inline">==</code>, <code class="inline">!=</code>,
+             <code class="inline">&gt;</code>, <code class="inline">&lt;</code>,
+             <code class="inline">&gt;=</code>, <code class="inline">&lt;=</code>.</p>
+          <p>Обратите внимание на двоеточие <code class="inline">:</code> и отступ (4 пробела) —
+             в Python отступы обязательны!</p>
+          <p>Можно добавить <code class="inline">else</code> и <code class="inline">elif</code>:</p>
+          <pre class="code-block"><span class="kw">if</span> x &gt; <span class="nm">0</span>:
+    <span class="fn">print</span>(<span class="st">"плюс"</span>)
+<span class="kw">elif</span> x &lt; <span class="nm">0</span>:
+    <span class="fn">print</span>(<span class="st">"минус"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="st">"ноль"</span>)</pre>
+          <p><b>Задание:</b> создайте <code class="inline">temperature = 30</code>.
+             Если она больше 25 — выведите <code class="inline">"Hot"</code>,
+             иначе — <code class="inline">"Cool"</code>.</p>
+        `,
+        starter: `temperature = 30\n# Напишите условие ниже\n`,
+        check(output, code) {
+          if (!/temperature\s*=\s*30/.test(code))
+            return "Создайте переменную temperature = 30";
+          if (!/if\s+temperature\s*>\s*25\s*:/.test(code))
+            return "Напишите условие: if temperature > 25:";
+          if (!/else\s*:/.test(code))
+            return "Добавьте ветку else: для остальных случаев.";
+          if (!output.includes("Hot"))
+            return "При temperature = 30 должно выводиться Hot.";
+          return true;
+        }
+      },
+      {
+        id: "for",
+        title: "Цикл for",
+        theory: `
+          <span class="lesson-badge">Урок 6</span>
+          <h1 class="lesson-h">Цикл for</h1>
+          <p>Цикл <code class="inline">for</code> перебирает элементы последовательности:</p>
+          <pre class="code-block"><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">5</span>):
+    <span class="fn">print</span>(i)</pre>
+          <p><code class="inline">range(5)</code> даёт числа <code class="inline">0, 1, 2, 3, 4</code>.</p>
+          <p>Можно перебирать и строки, и списки:</p>
+          <pre class="code-block"><span class="kw">for</span> letter <span class="kw">in</span> <span class="st">"abc"</span>:
+    <span class="fn">print</span>(letter)</pre>
+          <p><b>Задание:</b> с помощью цикла <code class="inline">for</code> и
+             <code class="inline">range()</code> выведите на экран числа от 1 до 5
+             (каждое с новой строки).</p>
+        `,
+        starter: `# Выведите числа от 1 до 5\n`,
+        check(output, code) {
+          if (!/for\s+\w+\s+in\s+range\s*\(\s*1\s*,\s*6\s*\)/.test(code) &&
+              !/for\s+\w+\s+in\s+range\s*\(\s*1\s*,\s*6\s*\)/.test(code))
+            return "Используйте цикл for с range(1, 6) — это даст числа 1..5";
+          const nums = output.trim().split(/\s+/);
+          const expected = ["1","2","3","4","5"];
+          if (nums.length !== 5 || !expected.every((v,i)=>nums[i]===v))
+            return "Ожидается вывод чисел 1, 2, 3, 4, 5 — каждое с новой строки.";
+          return true;
+        }
+      },
+      {
+        id: "while",
+        title: "Цикл while",
+        theory: `
+          <span class="lesson-badge">Урок 7</span>
+          <h1 class="lesson-h">Цикл while</h1>
+          <p><code class="inline">while</code> повторяет код, пока условие истинно:</p>
+          <pre class="code-block">i = <span class="nm">1</span>
+<span class="kw">while</span> i &lt;= <span class="nm">3</span>:
+    <span class="fn">print</span>(i)
+    i += <span class="nm">1</span></pre>
+          <p>Важно менять переменную внутри цикла, иначе он станет бесконечным!</p>
+          <div class="hint">⚠️ Если цикл «зависнет», нажмите «Сбросить код» и исправьте условие.</div>
+          <p><b>Задание:</b> с помощью <code class="inline">while</code> выведите
+             числа от 5 до 1 в обратном порядке (5, 4, 3, 2, 1).</p>
+        `,
+        starter: `n = 5\n# Напишите while-цикл\n`,
+        check(output, code) {
+          if (!/while\s+n\s*>=\s*1\s*:/.test(code))
+            return "Напишите цикл while n >= 1:";
+          const nums = output.trim().split(/\s+/);
+          const expected = ["5","4","3","2","1"];
+          if (nums.length !== 5 || !expected.every((v,i)=>nums[i]===v))
+            return "Ожидается вывод: 5 4 3 2 1 (каждое с новой строки).";
+          return true;
+        }
+      }
+    ]
+  },
+  {
+    title: "Функции и коллекции",
+    lessons: [
+      {
+        id: "functions",
+        title: "Функции",
+        theory: `
+          <span class="lesson-badge">Урок 8</span>
+          <h1 class="lesson-h">Функции</h1>
+          <p>Функция — это именованный блок кода, который можно вызывать многократно.
+             Определяется через <code class="inline">def</code>:</p>
+          <pre class="code-block"><span class="kw">def</span> <span class="fn">greet</span>(name):
+    <span class="kw">return</span> <span class="st">"Привет, "</span> + name
+
+<span class="fn">print</span>(<span class="fn">greet</span>(<span class="st">"Алиса"</span>))</pre>
+          <p><code class="inline">return</code> возвращает результат из функции.</p>
+          <p><b>Задание:</b> создайте функцию <code class="inline">square(x)</code>,
+             которая возвращает квадрат числа x. Выведите <code class="inline">square(7)</code>.</p>
+        `,
+        starter: `# Определите функцию square(x)\n`,
+        check(output, code) {
+          if (!/def\s+square\s*\(\s*\w+\s*\)\s*:/.test(code
