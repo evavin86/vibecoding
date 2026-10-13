@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мои проекты — навигация</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background: #0f1117; color: #e6edf3;
+    min-height: 100vh; padding: 40px 20px;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 8px; text-align: center; }
+  h1 span { color: #58a6ff; }
+  .subtitle { text-align: center; color: #8b949e; margin-bottom: 36px; font-size: 15px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  a.card {
+    display: flex; flex-direction: column; gap: 8px; padding: 20px;
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    text-decoration: none; color: inherit; transition: all 0.2s;
+  }
+  a.card:hover { border-color: #58a6ff; background: #1c2128; transform: translateY(-3px); }
+  .card .file {
+    font-family: Consolas, monospace; font-size: 14px;
+    color: #58a6ff; word-break: break-all;
+  }
+  .card .desc { font-size: 13px; color: #8b949e; line-height: 1.5; }
+  .card .tag {
+    align-self: flex-start; font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+    background: rgba(88,166,255,.12); color: #58a6ff;
+  }
+  .card .tag.green  { background: rgba(63,185,80,.12);  color: #3fb950; }
+  .card .tag.purple { background: rgba(163,113,247,.12); color: #a371f7; }
+  .card .tag.orange { background: rgba(210,153,34,.12);  color: #d29922; }
+  footer { margin-top: 40px; text-align: center; color: #6e7681; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🐍 Мои <span>проекты</span></h1>
+  <p class="subtitle">Коллекция HTML-страниц с курсами Python</p>
+
+  <div class="grid">
+    <a class="card" href="zoocode.html">
+      <span class="tag green">Pyodide + CodeMirror</span>
+      <span class="file">zoocode.html</span>
+      <span class="desc">PyCodeCamp — полный курс Python: настоящий интерпретатор в браузере, теория и автопроверка.</span>
+    </a>
+
+    <a class="card" href="zai.html">
+      <span class="tag green">Свой интерпретатор</span>
+      <span class="file">zai.html</span>
+      <span class="desc">«КодЛагерь» — курс Python с мини-интерпретатором на чистом JavaScript, сертификат.</span>
+    </a>
+
+    <a class="card" href="deepseek.html">
+      <span class="tag purple">React + Pyodide</span>
+      <span class="file">deepseek.html</span>
+      <span class="desc">PyCodeCamp на React: тёмная тема, боковое меню с прогрессом, редактор кода.</span>
+    </a>
+
+    <a class="card" href="qwen_web.html">
+      <span class="tag purple">React + Tailwind</span>
+      <span class="file">qwen_web.html</span>
+      <span class="desc">Полноценный курс с Tailwind CSS: профиль, сертификат, прогресс в localStorage.</span>
+    </a>
+
+    <a class="card" href="qwen_agen.html">
+      <span class="tag orange">Демо-компонент</span>
+      <span class="file">qwen_agen.html</span>
+      <span class="desc">Компонент навигации по учебному модулю на React + Tailwind.</span>
+    </a>
+
+    <a class="card" href="yagpt.html">
+      <span class="tag orange">Мини-курс</span>
+      <span class="file">yagpt.html</span>
+      <span class="desc">Python Mini-Course — лёгкая страница с 3 уроками и запуском кода.</span>
+    </a>
+  </div>
+
+  <footer>Всего файлов: 6</footer>
+</div>
+</body>
+</html>
